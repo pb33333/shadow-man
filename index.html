@@ -199,7 +199,7 @@ table.lb-table td.lb-score { font-weight: 800; font-variant-numeric: tabular-num
 .pips { margin-left: auto; display: flex; gap: 3px; font-size: 11px; color: #c8d4ff; align-items: center; }
 .pips i { width: 14px; height: 6px; border-radius: 2px; background: var(--atb); box-shadow: 0 0 6px var(--atb); }
 .tac-foot { margin-top: 8px; text-align: center; font-size: 11px; color: #c8d4ff; }
-@media (max-width: 560px) { .tac-cols { grid-template-columns: 1fr; } #victory button { flex: 1 1 100%; min-width: auto !important; } #tpad { --b: 40px !important; gap: 4px !important; grid-template-columns: repeat(3, var(--b)) !important; } }
+@media (max-width: 900px) { #tpad { --b: 36px !important; gap: 3px !important; grid-template-columns: repeat(2, var(--b)) !important; } } @media (max-width: 560px) { .tac-cols { grid-template-columns: 1fr; } #victory button { flex: 1 1 100%; min-width: auto !important; } #tpad { --b: 32px !important; gap: 2px !important; grid-template-columns: repeat(2, var(--b)) !important; } }
 
 #vignette { position: fixed; inset: 0; pointer-events: none; z-index: 9; opacity: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(255,20,60,.45) 100%); }
 #eclipse-tint { position: fixed; inset: 0; pointer-events: none; z-index: 8; opacity: 0; background: radial-gradient(ellipse at center, rgba(60,0,90,.05) 30%, rgba(40,0,70,.65) 100%); }
