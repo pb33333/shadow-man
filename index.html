@@ -31,7 +31,6 @@ body { font-family: 'Exo 2', system-ui, sans-serif; color: var(--fg); user-selec
 button { font-family: inherit; }
 
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
-  #hud:has(#skill-tree:not([hidden])), #hud:has(#tree:not([hidden])) { z-index: 150; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(6px); }
 .ffwin { background: linear-gradient(180deg, rgba(40,60,150,.94), rgba(10,18,66,.95)); border: 2px solid rgba(232,238,255,.85); border-radius: 10px; box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 12px 40px rgba(0,0,0,.5); color: #fff; }
 .lbl { font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
@@ -160,6 +159,7 @@ body.touch #arise b { display: none; }
 .trnode .k { font-size: .57rem; font-weight: 900; color: var(--gold); margin-top: 2px; }
 #tr-close { margin: 12px auto 0; display: block; }
 #skill-tree { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(480px, 92vw); padding: 16px 18px 18px; z-index: 110; pointer-events: auto; }
+#hud:has(#skill-tree:not([hidden])), #hud:has(#tree:not([hidden])) { z-index: 150; }
 #st-title { text-align: center; font-size: .78rem; font-weight: 900; letter-spacing: .3em; color: var(--gold); text-shadow: 0 0 10px rgba(255,211,106,.6); margin-bottom: 2px; }
 #st-level { text-align: center; font-size: 1.3rem; font-weight: 900; color: #fff; letter-spacing: .1em; margin-bottom: 12px; }
 #st-cards { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
@@ -168,23 +168,23 @@ body.touch #arise b { display: none; }
 .stcard .st-icon { font-size: 28px; }
 .stcard .st-name { font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-align: center; color: #fff; }
 .stcard .st-desc { font-size: .68rem; color: var(--dim); text-align: center; line-height: 1.4; }
-  #lb-panel { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-  #lb-submit-row { display: flex; gap: 8px; }
-  #lb-name-input { flex: 1; min-width: 0; background: rgba(20,14,50,.88); border: 1.5px solid rgba(190,160,255,.35); border-radius: 10px; padding: 10px 12px; color: #fff; font: inherit; font-weight: 700; letter-spacing: .02em; }
-  #lb-name-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 12px rgba(255,211,106,.35); }
-  #lb-submit-btn { flex: 0 0 auto; background: linear-gradient(135deg, var(--gold), #ffb347); border: none; border-radius: 10px; padding: 10px 16px; font-weight: 900; letter-spacing: .06em; font-size: .75rem; color: #241600; cursor: pointer; }
-  #lb-submit-btn:active { transform: scale(.97); }
-  #lb-submit-btn:disabled { opacity: .5; cursor: default; }
-  #lb-table-wrap { max-height: 46vh; overflow-y: auto; border-radius: 12px; border: 1.5px solid rgba(190,160,255,.25); }
-  table.lb-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-  table.lb-table th { position: sticky; top: 0; background: rgba(20,14,50,.96); color: var(--dim); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; text-align: left; padding: 8px 10px; }
-  table.lb-table th:last-child, table.lb-table td:last-child { text-align: right; }
-  table.lb-table td { padding: 8px 10px; color: #fff; border-top: 1px solid rgba(190,160,255,.15); }
-  table.lb-table tr:nth-child(even) td { background: rgba(190,160,255,.05); }
-  table.lb-table tr.lb-me td { background: rgba(255,211,106,.14); }
-  table.lb-table td.lb-rank { font-weight: 900; color: var(--gold); width: 2.4em; }
-  table.lb-table td.lb-score { font-weight: 800; font-variant-numeric: tabular-nums; }
-  #lb-empty { text-align: center; color: var(--dim); font-size: .78rem; padding: 18px 0; }
+#lb-panel { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+#lb-submit-row { display: flex; gap: 8px; }
+#lb-name-input { flex: 1; min-width: 0; background: rgba(20,14,50,.88); border: 1.5px solid rgba(190,160,255,.35); border-radius: 10px; padding: 10px 12px; color: #fff; font: inherit; font-weight: 700; letter-spacing: .02em; }
+#lb-name-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 12px rgba(255,211,106,.35); }
+#lb-submit-btn { flex: 0 0 auto; background: linear-gradient(135deg, var(--gold), #ffb347); border: none; border-radius: 10px; padding: 10px 16px; font-weight: 900; letter-spacing: .06em; font-size: .75rem; color: #241600; cursor: pointer; }
+#lb-submit-btn:active { transform: scale(.97); }
+#lb-submit-btn:disabled { opacity: .5; cursor: default; }
+#lb-table-wrap { max-height: 46vh; overflow-y: auto; border-radius: 12px; border: 1.5px solid rgba(190,160,255,.25); }
+table.lb-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+table.lb-table th { position: sticky; top: 0; background: rgba(20,14,50,.96); color: var(--dim); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; text-align: left; padding: 8px 10px; }
+table.lb-table th:last-child, table.lb-table td:last-child { text-align: right; }
+table.lb-table td { padding: 8px 10px; color: #fff; border-top: 1px solid rgba(190,160,255,.15); }
+table.lb-table tr:nth-child(even) td { background: rgba(190,160,255,.05); }
+table.lb-table tr.lb-me td { background: rgba(255,211,106,.14); }
+table.lb-table td.lb-rank { font-weight: 900; color: var(--gold); width: 2.4em; }
+table.lb-table td.lb-score { font-weight: 800; font-variant-numeric: tabular-nums; }
+#lb-empty { text-align: center; color: var(--dim); font-size: .78rem; padding: 18px 0; }
 @keyframes vic { 0% { opacity: 0; transform: translate(-50%, 12px) } 7% { opacity: 1; transform: translate(-50%, 0) } 86% { opacity: 1 } 100% { opacity: 0 } }
 
 #tactical { position: fixed; left: 50%; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px) + 10px) + 110px); transform: translateX(-50%); width: min(600px, 94vw); z-index: 60; padding: 10px 14px 12px; }
@@ -552,7 +552,7 @@ const G = { corpses: [], extracted: 0, on: false, paused: false, tactical: false
 const PL = { hp: 150, maxHp: 150, level: 1, dmgMul: 1, regen: 3, enRegen: 11, vx: 0, vz: 0, jumpH: 0, vy: 0, grounded: true, jumps: 0, coyote: 0, airT: 0, shootCd: 0, facing: Math.PI, swing: 0, strikeDir: 0,
   phase: 0, lastHit: -10, auraT: 0, dashT: 0, dashX: 0, dashZ: 0, dashHit: null, rollT: 0, rollX: 0, rollZ: 0, pose: 0, atb: 0, atbSegs: 2,
   weapon: 'claws', owned: ['claws'], items: { potion: 3, ether: 2, elixir: 1 },
-  tree: {}, pts: 0,
+  tree: {}, pts: 0, built: { wall: false, tower: false },
   unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse']) }; // abilities start locked; skill tree unlocks them
 const keys = {}, act = {};
 const TJ = { id: null, x: 0, y: 0, ox: 0, oy: 0 }, TL = { id: null, lx: 0, ly: 0 };
@@ -687,48 +687,48 @@ function showAchievements() {
   $('skill-tree').hidden = false;
 }
 const lbEsc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function showLeaderboard() {
-      if (skillTreeOpen) return; skillTreeOpen = true; G.noPause = true;
-      $('st-title').textContent = 'LEADERBOARD'; $('st-level').textContent = 'Top gil hoarders';
-      const cards = $('st-cards');
-      const savedName = localStorage.getItem('lbName') || '';
-      cards.innerHTML =
-            '<div id="lb-panel">' +
-              '<div id="lb-submit-row">' +
-                '<input id="lb-name-input" maxlength="20" placeholder="Your name" value="' + lbEsc(savedName) + '">' +
-                '<button id="lb-submit-btn">📤 SUBMIT ' + G.gil.toLocaleString() + ' GIL</button>' +
-              '</div>' +
-              '<div id="lb-table-wrap"><div id="lb-empty">⏳ Loading…</div></div>' +
-              '<button class="btn ghost" id="lb-close-btn">CLOSE</button>' +
-            '</div>';
-      $('lb-close-btn').addEventListener('click', closeSkillTree);
-      const nameInput = $('lb-name-input'), submitBtn = $('lb-submit-btn');
-      submitBtn.addEventListener('click', () => {
-            const name = nameInput.value.trim();
-            if (!name) { nameInput.focus(); return; }
-            localStorage.setItem('lbName', name);
-            submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
-            lbSubmit(name, G.gil).then(() => { notify('Score submitted!', '#ffd36a'); render(lastRows); })
-              .catch(() => { notify('Could not submit score', '#ff8a80'); submitBtn.disabled = false; submitBtn.textContent = '📤 SUBMIT ' + G.gil.toLocaleString() + ' GIL'; });
-      });
-      let lastRows = null;
-      const render = rows => {
-            lastRows = rows;
-            const wrap = $('lb-table-wrap');
-            if (!wrap) return;
-            const myName = localStorage.getItem('lbName') || '';
-            if (!rows || !rows.length) { wrap.innerHTML = '<div id="lb-empty">No scores yet — be the first</div>'; return; }
-            let html = '<table class="lb-table"><thead><tr><th>#</th><th>Name</th><th>Gil</th></tr></thead><tbody>';
-            rows.forEach((r, i) => {
-                    const mine = r.name === myName;
-                    html += '<tr class="' + (mine ? 'lb-me' : '') + '"><td class="lb-rank">' + (i + 1) + '</td><td>' + lbEsc(r.name) + '</td><td class="lb-score">💰 ' + r.score.toLocaleString() + '</td></tr>';
-            });
-            html += '</tbody></table>';
-            wrap.innerHTML = html;
-      };
-      lbFetchTop().then(render).catch(() => render(null));
-      $('skill-tree').hidden = false;
-  }
+function showLeaderboard() {
+  if (skillTreeOpen) return; skillTreeOpen = true; G.noPause = true;
+  $('st-title').textContent = 'LEADERBOARD'; $('st-level').textContent = 'Top gil hoarders';
+  const cards = $('st-cards');
+  const savedName = localStorage.getItem('lbName') || '';
+  cards.innerHTML =
+    '<div id="lb-panel">' +
+      '<div id="lb-submit-row">' +
+        '<input id="lb-name-input" maxlength="20" placeholder="Your name" value="' + lbEsc(savedName) + '">' +
+        '<button id="lb-submit-btn">📤 SUBMIT ' + G.gil.toLocaleString() + ' GIL</button>' +
+      '</div>' +
+      '<div id="lb-table-wrap"><div id="lb-empty">⏳ Loading…</div></div>' +
+      '<button class="btn ghost" id="lb-close-btn">CLOSE</button>' +
+    '</div>';
+  $('lb-close-btn').addEventListener('click', closeSkillTree);
+  const nameInput = $('lb-name-input'), submitBtn = $('lb-submit-btn');
+  submitBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+    localStorage.setItem('lbName', name);
+    submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
+    lbSubmit(name, G.gil).then(() => { notify('Score submitted!', '#ffd36a'); render(lastRows); })
+      .catch(() => { notify('Could not submit score', '#ff8a80'); submitBtn.disabled = false; submitBtn.textContent = '📤 SUBMIT ' + G.gil.toLocaleString() + ' GIL'; });
+  });
+  let lastRows = null;
+  const render = rows => {
+    lastRows = rows;
+    const wrap = $('lb-table-wrap');
+    if (!wrap) return;
+    const myName = localStorage.getItem('lbName') || '';
+    if (!rows || !rows.length) { wrap.innerHTML = '<div id="lb-empty">No scores yet — be the first</div>'; return; }
+    let html = '<table class="lb-table"><thead><tr><th>#</th><th>Name</th><th>Gil</th></tr></thead><tbody>';
+    rows.forEach((r, i) => {
+      const mine = r.name === myName;
+      html += '<tr class="' + (mine ? 'lb-me' : '') + '"><td class="lb-rank">' + (i + 1) + '</td><td>' + lbEsc(r.name) + '</td><td class="lb-score">💰 ' + r.score.toLocaleString() + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  };
+  lbFetchTop().then(render).catch(() => render(null));
+  $('skill-tree').hidden = false;
+}
 const nodeGot = n => !!PL.tree[n.id] || !!(n.abil && PL.unlockedAbils.has(n.abil)); // an ability bought at the shop counts
 const nodeOpen = n => { const b = TREE.find(x => x.nodes.includes(n)); return !!b && b.nodes.slice(0, b.nodes.indexOf(n)).every(nodeGot); };
 const SKILL_ABILS = POWERS.filter(p => !['strike', 'summon', 'bh', 'eclipse'].includes(p.id));
@@ -2067,21 +2067,21 @@ function buildWeaponMesh(id) {
   return g;
 }
 const SHIELD_WPNS = ['axe', 'claymore']; // one-handed-enough heavy weapons that pair with an off-hand shield
-  function buildShieldMesh(weaponId) {
-      const w = WEAPONS[weaponId], gl = basic(w.col), dark = std(0x120c1c, { roughness: .35, metalness: .8 });
-      const g = new THREE.Group();
-      part(GEO.disc, dark, g, [0, 0, 0], [.3, .3, .3]);
-      const rim = part(GEO.cyl, gl, g, [0, 0, -.015], [.31, .035, .31]); rim.rotation.x = Math.PI / 2;
-      part(GEO.sphere, gl, g, [0, 0, .04], [.09, .09, .09]);
-      return g;
-  }
-  function equipWeapon(id, silent) {
+function buildShieldMesh(weaponId) {
+  const w = WEAPONS[weaponId], gl = basic(w.col), dark = std(0x120c1c, { roughness: .35, metalness: .8 });
+  const g = new THREE.Group();
+  part(GEO.disc, dark, g, [0, 0, 0], [.3, .3, .3]);
+  const rim = part(GEO.cyl, gl, g, [0, 0, -.015], [.31, .035, .31]); rim.rotation.x = Math.PI / 2;
+  part(GEO.sphere, gl, g, [0, 0, .04], [.09, .09, .09]);
+  return g;
+}
+function equipWeapon(id, silent) {
   if (!PL.owned.includes(id)) return;
   PL.weapon = id;
   if (hero.weapon) hero.hand.remove(hero.weapon);
   hero.weapon = buildWeaponMesh(id); hero.weapon.rotation.x = Math.PI / 2; hero.weapon.traverse(o => { if (o.isMesh) o.castShadow = true; }); hero.hand.add(hero.weapon);
-    if (hero.shield) { hero.handL.remove(hero.shield); hero.shield = null; }
-    if (SHIELD_WPNS.includes(id)) { hero.shield = buildShieldMesh(id); hero.shield.rotation.y = Math.PI / 2; hero.shield.position.set(0, -.04, .08); hero.shield.traverse(o => { if (o.isMesh) o.castShadow = true; }); hero.handL.add(hero.shield); }
+  if (hero.shield) { hero.handL.remove(hero.shield); hero.shield = null; }
+  if (SHIELD_WPNS.includes(id)) { hero.shield = buildShieldMesh(id); hero.shield.rotation.y = Math.PI / 2; hero.shield.position.set(0, -.04, .08); hero.shield.traverse(o => { if (o.isMesh) o.castShadow = true; }); hero.handL.add(hero.shield); }
   viewModel.clear(); const vm = buildWeaponMesh(id); vm.position.set(.42, -.5, -.85); vm.rotation.set(-1.25, .25, -.2); if (id === 'claws') { vm.position.set(.36, -.34, -.7); vm.scale.setScalar(.6); } viewModel.add(vm); viewModel.userData.w = vm;
   renderWeaponSlots();
   if (!silent) { notify(WEAPONS[id].icon + ' ' + WEAPONS[id].name, '#ffd36a'); sfx('swing'); }
@@ -3601,7 +3601,7 @@ function updateCtx() {
   const add = (t, f) => { const b = document.createElement('button'); b.textContent = t; b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on) f(); ctxKey = ''; }); ctxEl.appendChild(b); };
   if (maya) add('💬 Talk', mayaSpeak);
   if (canoeNear()) add(CANOE.on ? '⬅ Leave canoe' : '⛵ Canoe', toggleCanoe);
-  if (camp) { add('🛒 Shop', showShop); add('🌳 Skills' + (PL.pts ? ' ★' + PL.pts : ''), () => showTree('game')); add('🍖 Cook' + (PL.mealT > 0 ? ' (' + Math.ceil(PL.mealT) + 's)' : ''), cookMeat); if (ALLY.met) add(!G.side ? '📋 Errand' : sideReady(G.side) ? '📋 Turn in' : '📋 ' + G.side.name, sideAction); if (G.merchant) add('🧳 Merchant (' + Math.ceil(G.merchant.t) + 's)', showMerchant); add(!G.bounty ? '📜 Bounty' : bountyGot(G.bounty) >= G.bounty.n ? '📜 Claim' : '📜 ' + bountyGot(G.bounty) + '/' + G.bounty.n, bountyAction); add('🧪 40g', () => buyItem('potion', 40)); add('🔮 70g', () => buyItem('ether', 70)); add('🟫 Vest ' + (3 + 2 * PL.craft.vest), () => craftGear('vest')); add('🦷 Charm ' + (3 + 2 * PL.craft.charm), () => craftGear('charm')); }
+  if (camp) { add('🛒 Shop', showShop); add('🌳 Skills' + (PL.pts ? ' ★' + PL.pts : ''), () => showTree('game')); add('🍖 Cook' + (PL.mealT > 0 ? ' (' + Math.ceil(PL.mealT) + 's)' : ''), cookMeat); if (ALLY.met) add(!G.side ? '📋 Errand' : sideReady(G.side) ? '📋 Turn in' : '📋 ' + G.side.name, sideAction); if (G.merchant) add('🧳 Merchant (' + Math.ceil(G.merchant.t) + 's)', showMerchant); add(!G.bounty ? '📜 Bounty' : bountyGot(G.bounty) >= G.bounty.n ? '📜 Claim' : '📜 ' + bountyGot(G.bounty) + '/' + G.bounty.n, bountyAction); add('🧪 40g', () => buyItem('potion', 40)); add('🔮 70g', () => buyItem('ether', 70)); add('🟫 Vest ' + (3 + 2 * PL.craft.vest), () => craftGear('vest')); add('🦷 Charm ' + (3 + 2 * PL.craft.charm), () => craftGear('charm')); if (!PL.built.wall) add('🪵 Wall 12🟫+12🦷', () => buyBuilding('wall')); if (!PL.built.tower) add('🗼 Tower 10🟫+10🦷+10🍖', () => buyBuilding('tower')); }
 }
 function hint(k, msg) { try { const h = JSON.parse(localStorage.getItem('shadowman-hints') || '{}'); if (h[k]) return; h[k] = 1; localStorage.setItem('shadowman-hints', JSON.stringify(h)); } catch (e) {} notify('💡 ' + msg, '#9ad'); }
 function updateHints() {
@@ -3667,7 +3667,7 @@ function drawMinimapDepths() { // the chamber: just its wall, the creatures, and
 }
 function drawMinimap() {
   if (REGION) { drawMinimapDepths(); return; }
-  const W = 150, C = 75, SC = C / 70, cs = Math.cos(camYaw), sn = Math.sin(camYaw), pp = hero.root.position;
+  const W = 150, C = 75, SC = C / (PL.built.tower ? 95 : 70), cs = Math.cos(camYaw), sn = Math.sin(camYaw), pp = hero.root.position; // the watchtower sees further
   const tr = (x, z) => { const dx = x - pp.x, dz = z - pp.z; return [(dx * cs - dz * sn) * SC, (dx * sn + dz * cs) * SC]; };
   mctx.clearRect(0, 0, W, W);
   mctx.save(); mctx.beginPath(); mctx.arc(C, C, C - 1, 0, Math.PI * 2); mctx.clip();
@@ -3847,10 +3847,34 @@ function buildCamp() {
   const fi = new THREE.Mesh(new THREE.ConeGeometry(.24, .8, 7), basic(0xffd36a)); fi.position.y = .65; g.add(fi);
   CAMP.flame = [fl, fi]; CAMP.g = g; scene.add(g);
 }
+const CAMP_BUILDS = { // materials-only (no gil): the camp's own building options
+  wall: { name: 'Palisade Wall', icon: '🪵', cost: { hide: 12, fang: 12 }, desc: 'Stakes further out keep beasts further back at night.' },
+  tower: { name: 'Watchtower', icon: '🗼', cost: { hide: 10, fang: 10, meat: 10 }, desc: 'See further on the minimap.' },
+};
+function addCampBuilding(kind) { // adds the structure's mesh to the existing camp group; called on purchase and on save load
+  if (!CAMP.g) return;
+  const wood = std(0x5a3a1e, { roughness: .9 }), dark = std(0x33240f, { roughness: 1 });
+  if (kind === 'wall') {
+    for (let i = 0; i < 16; i++) { const a = i / 16 * 6.283, r = 4.6, stake = new THREE.Mesh(new THREE.CylinderGeometry(.05, .09, 1.6, 6), i % 2 ? wood : dark);
+      stake.position.set(Math.cos(a) * r, .8, Math.sin(a) * r); stake.rotation.x = rand(-.05, .05); stake.rotation.z = rand(-.05, .05); CAMP.g.add(stake); }
+  } else if (kind === 'tower') {
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.16, .22, 4.2, 8), wood); pole.position.set(3.8, 2.1, -3.2); CAMP.g.add(pole);
+    const deck = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .2, 8), wood); deck.position.set(3.8, 4.1, -3.2); CAMP.g.add(deck);
+    for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283, rail = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .7, 5), dark); rail.position.set(3.8 + Math.cos(a) * .95, 4.55, -3.2 + Math.sin(a) * .95); CAMP.g.add(rail); }
+  }
+}
+function buyBuilding(kind) { // camp menu action: spend materials once to add a permanent structure
+  if (!CAMP.near || PL.built[kind]) return;
+  const b = CAMP_BUILDS[kind];
+  for (const m in b.cost) if (PL.mats[m] < b.cost[m]) { notify(b.name + ' needs ' + Object.entries(b.cost).map(([k, n]) => n + ' ' + k).join(' + '), '#ff8a80'); return; }
+  for (const m in b.cost) PL.mats[m] -= b.cost[m];
+  PL.built[kind] = true; addCampBuilding(kind); sfx('pickup'); showBanner(b.icon + ' ' + b.name.toUpperCase() + ' BUILT', b.desc); writeSave();
+}
 function updateCamp() {
   if (!CAMP.g) return;
   const p = hero.root.position, d = Math.hypot(p.x - CAMP.x, p.z - CAMP.z), t = G.time, dt = Math.min(.1, Math.max(0, t - CAMP.last)); CAMP.last = t;
-  for (const e of G.enemies) { if (e.dying || e.dead) continue; const ex = e.root.position.x - CAMP.x, ez = e.root.position.z - CAMP.z, ed = Math.hypot(ex, ez); if (ed < 11) { const k = 11 / (ed || 1); e.root.position.x = CAMP.x + ex * k; e.root.position.z = CAMP.z + ez * k; } } // beasts will not enter the camp
+  const safeR = PL.built.wall ? 17 : 11; // the palisade wall pushes the no-beast zone further out
+  for (const e of G.enemies) { if (e.dying || e.dead) continue; const ex = e.root.position.x - CAMP.x, ez = e.root.position.z - CAMP.z, ed = Math.hypot(ex, ez); if (ed < safeR) { const k = safeR / (ed || 1); e.root.position.x = CAMP.x + ex * k; e.root.position.z = CAMP.z + ez * k; } } // beasts will not enter the camp
   const f = 1 + Math.sin(t * 17) * .12 + Math.sin(t * 29) * .08; CAMP.flame[0].scale.set(f, f * 1.1, f); CAMP.flame[1].scale.set(1 / f, f, 1 / f);
   if (d < 40 && Math.random() < .5) emit(CAMP.x + rand(-.25, .25), CAMP.g.position.y + 1.1, CAMP.z + rand(-.25, .25), rand(-.2, .2), rand(1, 2.2), rand(-.2, .2), Math.random() < .5 ? 0xff8a2a : 0xffd36a, .18, .9, 0, 1);
   if (d > 7) { CAMP.near = false; return; }
@@ -4119,7 +4143,7 @@ function snapshot() {
   const q = G.q, hp = hero.root.position;
   return { v: SAVE_VER, t: Date.now(),
     pl: { hp: PL.hp, maxHp: PL.maxHp, level: PL.level, dmgMul: PL.dmgMul, regen: PL.regen, enRegen: PL.enRegen, atbSegs: PL.atbSegs, critBonus: PL.critBonus || 0,
-      weapon: PL.weapon, owned: PL.owned.slice(), items: Object.assign({}, PL.items), abils: [...PL.unlockedAbils], tree: Object.keys(PL.tree), pts: PL.pts, mats: Object.assign({}, PL.mats), mealT: PL.mealT || 0, craft: Object.assign({}, PL.craft) },
+      weapon: PL.weapon, owned: PL.owned.slice(), items: Object.assign({}, PL.items), abils: [...PL.unlockedAbils], tree: Object.keys(PL.tree), pts: PL.pts, mats: Object.assign({}, PL.mats), mealT: PL.mealT || 0, craft: Object.assign({}, PL.craft), built: Object.assign({}, PL.built) },
     g: { gil: G.gil, gold: G.gold, exp: G.exp, xp: G.xp, kills: G.kills, chests: G.chests, maxEnergy: G.maxEnergy || 100, secs: Math.round(G.time - G.startTime) },
     qdone: q ? Math.max(0, q.waiting ? q.i + 1 : q.i) : 0,
     bounty: G.bounty ? { kind: G.bounty.kind, n: G.bounty.n, reward: G.bounty.reward, got: bountyGot(G.bounty) } : null,
@@ -4139,6 +4163,7 @@ function cleanSave(d) {
       atbSegs: Math.floor(nm(p.atbSegs, 2, 5, 2)), critBonus: nm(p.critBonus, 0, 1, 0), weapon: owned.includes(p.weapon) ? p.weapon : 'claws', owned,
       items: { potion: Math.floor(nm(it.potion, 0, 99, 3)), ether: Math.floor(nm(it.ether, 0, 99, 2)), elixir: Math.floor(nm(it.elixir, 0, 99, 1)) },
       mats: { hide: Math.floor(nm(p.mats && p.mats.hide, 0, 999, 0)), fang: Math.floor(nm(p.mats && p.mats.fang, 0, 999, 0)), meat: Math.floor(nm(p.mats && p.mats.meat, 0, 999, 0)) }, mealT: nm(p.mealT, 0, 999, 0), craft: { vest: Math.floor(nm(p.craft && p.craft.vest, 0, 4, 0)), charm: Math.floor(nm(p.craft && p.craft.charm, 0, 4, 0)) },
+      built: { wall: !!(p.built && p.built.wall), tower: !!(p.built && p.built.tower) },
       abils: (Array.isArray(p.abils) ? p.abils : []).filter(id => ids.has(id)),
       tree: (Array.isArray(p.tree) ? p.tree : []).filter(id => TREE_IDS.has(id)), pts: Math.floor(nm(p.pts, 0, 99, 0)) },
     g: { gil: Math.floor(nm(g.gil, 0, 1e9, 0)), gold: Math.floor(nm(g.gold, 0, 1e9, 0)), exp: nm(g.exp, 0, 1e9, 0), xp: nm(g.xp, 0, 1e9, 0), kills: Math.floor(nm(g.kills, 0, 1e6, 0)),
@@ -4163,7 +4188,8 @@ function encodeSave(raw) { return SAVE_PFX + btoa(raw); }
 function decodeSave(code) { try { code = code.replace(/\s+/g, ''); return code.startsWith(SAVE_PFX) ? atob(code.slice(SAVE_PFX.length)) : code; } catch (e) { return ''; } }
 function applySave(d) {
   const p = d.pl, g = d.g;
-  Object.assign(PL, { maxHp: p.maxHp, level: p.level, dmgMul: p.dmgMul, regen: p.regen, enRegen: p.enRegen, atbSegs: p.atbSegs, critBonus: p.critBonus, items: Object.assign({}, p.items), owned: p.owned.slice(), mats: Object.assign({}, p.mats), craft: Object.assign({}, p.craft) });
+  Object.assign(PL, { maxHp: p.maxHp, level: p.level, dmgMul: p.dmgMul, regen: p.regen, enRegen: p.enRegen, atbSegs: p.atbSegs, critBonus: p.critBonus, items: Object.assign({}, p.items), owned: p.owned.slice(), mats: Object.assign({}, p.mats), craft: Object.assign({}, p.craft), built: Object.assign({}, p.built) });
+  if (PL.built.wall) addCampBuilding('wall'); if (PL.built.tower) addCampBuilding('tower');
   PL.hp = Math.max(p.hp, p.maxHp * .6); PL.mealT = p.mealT || 0; PL.unlockedAbils = new Set(['strike', 'summon', 'bh', 'eclipse', ...p.abils]);
   PL.tree = {}; p.tree.forEach(id => { PL.tree[id] = 1; }); PL.pts = p.pts;
   Object.assign(G, { gil: g.gil, gold: g.gold, exp: g.exp, xp: g.xp, kills: g.kills, chests: g.chests, maxEnergy: g.maxEnergy, energy: g.maxEnergy, startTime: G.time - g.secs, graceT: 8, rotate: false });
@@ -4257,7 +4283,7 @@ function startGame() {
   Object.assign(G, { on: true, paused: false, ended: false, tactical: false, photo: false, ts: 1, hitstop: 0, kills: 0, gold: 0, gil: 0, exp: 0, energy: 100, ult: 0, cd: { strike: 0, roll: 0 }, combo: 0, shake: 0,
     startTime: G.time, cycleT: 0, vign: 0, eclipseT: 0, surgeT: 0, bossDrops: 0, extracted: 0, graceT: 5, xp: 0, chests: 0, rw: { exp: 0, gil: 0, items: {} }, gorillaBoss: null,
     mission: 'explore', missionProgress: 0, totalDistance: 0, maxEnergy: 100, killKinds: {}, bounty: null, side: null, weather: 'clear', weatherT: rand(90, 200), wf: 0, boltT: 0, cutsceneT: 0, nightHuntCD: rand(60, 110), nightPack: null, merchant: null, merchantCD: rand(300, 420), rotate: true, sandbox: false, nextSave: G.time + 30 });
-  Object.assign(PL, { climb: null, mats: { hide: 0, fang: 0, meat: 0 }, craft: { vest: 0, charm: 0 }, critBonus: 0, tree: {}, pts: 0, mealT: 0, unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse']), guard: false, guardT: 0, hp: 150, maxHp: 150, level: 1, dmgMul: 1, regen: 3, enRegen: 11, vx: 0, vz: 0, facing: Math.PI, swing: 0, phase: 0, lastHit: -10, auraT: 0, dashT: 0, rollT: 0, pose: 0,
+  Object.assign(PL, { climb: null, mats: { hide: 0, fang: 0, meat: 0 }, craft: { vest: 0, charm: 0 }, built: { wall: false, tower: false }, critBonus: 0, tree: {}, pts: 0, mealT: 0, unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse']), guard: false, guardT: 0, hp: 150, maxHp: 150, level: 1, dmgMul: 1, regen: 3, enRegen: 11, vx: 0, vz: 0, facing: Math.PI, swing: 0, phase: 0, lastHit: -10, auraT: 0, dashT: 0, rollT: 0, pose: 0,
     vy: 0, grounded: true, jumps: 0, coyote: 0, airT: 0, shootCd: 0,
     atb: 100, atbSegs: 2, owned: ['claws'], items: { potion: 3, ether: 2, elixir: 1 } });
   if (carry) Object.assign(PL, { owned: carry.owned, tree: carry.tree, pts: carry.pts, craft: carry.craft, unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse', ...carry.abils]) });
