@@ -232,16 +232,16 @@ body.touch #joy-hint { display: block; }
 #shoot-btn { display: none !important; }
 #crawl-btn { display: none !important; }
 
-/* New mobile-only touch controls — vertical stack on right */
-#mobile-controls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); right: max(10px, env(safe-area-inset-right, 0px) + 6px); display: none; flex-direction: column; gap: 8px; z-index: 50; pointer-events: none; align-items: flex-end; }
-body.touch #mobile-controls { display: flex; }
-.mobile-btn { width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(100,200,255,.6); background: rgba(12,7,26,.8); color: #fff; font-size: 24px; display: grid; place-items: center; pointer-events: auto; touch-action: none; font-weight: bold; transition: background .1s, transform .1s; flex-shrink: 0; }
-.mobile-btn:active { background: rgba(100,200,255,.4); transform: scale(.95); }
+/* New mobile-only touch controls — 2-column grid bottom-left */
+#mobile-controls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); left: max(10px, env(safe-area-inset-left, 0px) + 6px); display: none; grid-template-columns: repeat(2, 56px); grid-auto-rows: 56px; gap: 6px; z-index: 50; pointer-events: none; }
+body.touch #mobile-controls { display: grid; }
+.mobile-btn { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(100,200,255,.6); background: rgba(12,7,26,.85); color: #fff; font-size: 20px; display: grid; place-items: center; pointer-events: auto; touch-action: none; font-weight: bold; transition: background .1s, transform .1s; }
+.mobile-btn:active { background: rgba(100,200,255,.4); transform: scale(.92); }
 #crawl-control { border-color: rgba(154,221,255,.5); }
 #skills-control { border-color: rgba(166,107,255,.6); }
 #ranged-control { border-color: rgba(255,200,87,.6); }
 #jump-control { border-color: rgba(106,255,154,.6); }
-#attack-control { border-color: rgba(255,179,71,.6); }
+#attack-control { border-color: rgba(255,179,71,.6); grid-column: 1 / -1; }
 #ctx { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column; gap: 2px; pointer-events: auto; z-index: 100; background: rgba(12,7,26,.95); border: 2px solid rgba(100,200,255,.6); border-radius: 8px; padding: 8px 0; max-height: 70vh; overflow-y: auto; min-width: 160px; }
 body.touch #ctx.on { display: flex; }
 #ctx button { pointer-events: auto; touch-action: none; padding: 8px 16px; border: none; background: transparent; color: #fff; font: 700 13px system-ui, sans-serif; text-align: left; white-space: nowrap; transition: background .1s; } #ctx button:hover { background: rgba(100,200,255,.2); }
