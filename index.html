@@ -3107,7 +3107,13 @@ function updateEnemies(dt) {
     const k = Math.min(1, Math.hypot(mvx, mvz) / e.spd);
     e.phase += dt * (e.kind === 'frog' ? (k > .05 ? 6 : 1) : 2 + Math.hypot(mvx, mvz) * 1.6);
     ANIM[e.kind](e, e.stgT > 0 ? 0 : k); alive(e, e.stgT > 0 ? 0 : k, dt, hero.root.position.x, hero.root.position.z);
-    if (e.boss && Math.random() < .3) emit(r.position.x + rand(-1.5, 1.5), r.position.y + rand(.5, 3) * e.scale * .5, r.position.z + rand(-1.5, 1.5), 0, rand(.5, 1.5), 0, 0xff2a50, .35, .7, 0, 1);
+    if (e.boss) {
+      if (Math.random() < .3) emit(r.position.x + rand(-1.5, 1.5), r.position.y + rand(.5, 3) * e.scale * .5, r.position.z + rand(-1.5, 1.5), 0, rand(.5, 1.5), 0, 0xff2a50, .35, .7, 0, 1);
+      // Boss enrage aura: pulsing ring when phase 2
+      if (e.phase2 && Math.random() < .15) ring(r.position.x, r.position.y + .3, r.position.z, e.reach * (1.2 + Math.sin(G.time * 3) * .2), 0xff2a50, .2);
+      // Attack warning: danger ring when winding up
+      if (e.atk > .3 && e.atk < .45 && Math.random() < .4) ring(r.position.x, r.position.y + .3, r.position.z, e.reach + 1, 0xff5050, .3);
+    }
     if (e.flash > 0) { e.flash = Math.max(0, e.flash - dt * 5); e.mats.forEach(m => m.emissive.copy(m.userData.base).lerp(_c.setHex(0xffffff), e.flash * .6)); }
   }
   G.enemies = list.filter(e => !e.dead);
