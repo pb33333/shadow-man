@@ -548,7 +548,7 @@ const TOD = {
 
 // ═════════════════════════════ STATE ═════════════════════════════
 const G = { corpses: [], extracted: 0, on: false, paused: false, tactical: false, ts: 1, hitstop: 0, time: 0, enemies: [], minions: [], bhs: [], shots: [], pickups: [], target: null, minionCmd: 'attack',
-  energy: 100, ult: 0, cd: {}, combo: 0, shake: 0, kills: 0, gil: 0, exp: 0, rw: null, startTime: 0, waveDmgDealt: 0, vign: 0, eclipseT: 0, surgeT: 0, bossDrops: 0, diff: DIFF.normal, noPause: false, sites: [], q: null, xp: 0, chests: 0 };
+  energy: 100, ult: 0, cd: {}, combo: 0, shake: 0, kills: 0, gil: 0, exp: 0, rw: null, startTime: 0, waveDmgDealt: 0, vign: 0, eclipseT: 0, surgeT: 0, bossDrops: 0, diff: DIFF.normal, noPause: false, sites: [], q: null, xp: 0, chests: 0, revealed: [] }; // revealed: cache positions spotted from a climb, shown on the minimap however far away
 const PL = { hp: 150, maxHp: 150, level: 1, dmgMul: 1, regen: 3, enRegen: 11, vx: 0, vz: 0, jumpH: 0, vy: 0, grounded: true, jumps: 0, coyote: 0, airT: 0, shootCd: 0, facing: Math.PI, swing: 0, strikeDir: 0,
   phase: 0, lastHit: -10, auraT: 0, dashT: 0, dashX: 0, dashZ: 0, dashHit: null, rollT: 0, rollX: 0, rollZ: 0, pose: 0, atb: 0, atbSegs: 2,
   weapon: 'claws', owned: ['claws'], items: { potion: 3, ether: 2, elixir: 1 },
@@ -2912,7 +2912,7 @@ function updatePlayer(dt, rdt) {
       climbing = true; PL.vx = PL.vz = 0; x = t.x + Math.cos(a) * (t.r + .6); z = t.z + Math.sin(a) * (t.r + .6);
       const dy = (iz > 0 ? 1 : iz < 0 ? -1 : 0) * (sprint ? 6.5 : 4.2) * dt; y += dy;
       if (y >= t.top) { y = t.top; x = t.x + Math.cos(a) * (t.r + 1.2); z = t.z + Math.sin(a) * (t.r + 1.2); PL.climb = null; climbing = false; ground = t.top;
-        if (!t.got) { t.got = true; G.gil += 100; G.gold += 100; popText(t.x, t.top + 2.5, t.z, '+100 gil · canopy view', '#ffd36a'); notify('🌳 Canopy reached · +100 gil', '#ffd36a'); sfx('pickup'); } }
+        if (!t.got) { t.got = true; G.gil += 100; G.gold += 100; popText(t.x, t.top + 2.5, t.z, '+100 gil · canopy view', '#ffd36a'); notify('🌳 Canopy reached · +100 gil', '#ffd36a'); sfx('pickup'); revealFromCanopy(t); } }
       else if (y <= ground && dy < 0) { y = ground; PL.climb = null; climbing = false; }
     }
   } else if (iz > 0 && mag && !PL.dashT && !PL.rollT && !PL.guard) {
@@ -3679,7 +3679,7 @@ function drawMinimap() {
   const dot = (x, z, col, r) => { const [sx, sy] = tr(x, z), d = Math.hypot(sx, sy), lim = C - 5, f = d > lim ? lim / d : 1; mctx.fillStyle = col; mctx.globalAlpha = f < 1 ? .55 : 1; mctx.beginPath(); mctx.arc(C + sx * f, C + sy * f, r, 0, Math.PI * 2); mctx.fill(); return [C + sx * f, C + sy * f]; };
   dot(0, 0, '#ffd36a', 3.5);
   G.pickups.forEach(q => dot(q.x, q.z, '#ffd36a', 5));
-  G.sites.forEach(x => { if (x.kind === 'loot' ? Math.hypot(x.x - pp.x, x.z - pp.z) < 45 : false) dot(x.x, x.z, '#ffb347', 3); });
+  G.sites.forEach(x => { if (x.kind === 'loot' ? Math.hypot(x.x - pp.x, x.z - pp.z) < 45 || G.revealed.some(r => Math.hypot(r.x - x.x, r.z - x.z) < 1) : false) dot(x.x, x.z, '#ffb347', 3); });
   { const t = questTarget(); if (t) dot(t.x, t.z, '#7fd8ff', 6); }
   G.bhs.forEach(b => dot(b.x, b.z, '#b06bff', 6));
   G.minions.forEach(m => dot(m.root.position.x, m.root.position.z, '#c9a0ff', 2));
@@ -3831,6 +3831,14 @@ function buildClimbTrees() {
 function updateClimb() {
   const p = hero.root.position;
   if (!climbHint) for (const t of CLIMB) if (Math.hypot(p.x - t.x, p.z - t.z) < t.r + 5) { climbHint = true; notify('🧗 Hold W against a giant trunk to climb · Space to leap off', '#7fffde'); break; }
+}
+function revealFromCanopy(t) { // from the top of a lookout tree, point out the nearest cache you haven't already spotted or found
+  // shortcut: G.revealed isn't saved, and a tree only re-triggers this the first time (t.got gates it) — a reload loses the reveal even though the tree stays climbed. Upgrade by saving G.revealed if that's worth fixing.
+  const unseen = G.sites.filter(x => x.kind === 'loot' && !G.revealed.some(r => Math.hypot(r.x - x.x, r.z - x.z) < 1));
+  if (!unseen.length) return;
+  const near = unseen.reduce((a, b) => Math.hypot(t.x - a.x, t.z - a.z) < Math.hypot(t.x - b.x, t.z - b.z) ? a : b);
+  G.revealed.push({ x: near.x, z: near.z });
+  notify('👁 A glint catches your eye, out past the canopy', '#9ad4f0');
 }
 
 // ═════════════════════════════ CAMP ═════════════════════════════
@@ -4311,7 +4319,7 @@ function startGame() {
   document.body.classList.remove('photo');
   Object.assign(G, { on: true, paused: false, ended: false, tactical: false, photo: false, ts: 1, hitstop: 0, kills: 0, gold: 0, gil: 0, exp: 0, energy: 100, ult: 0, cd: { strike: 0, roll: 0 }, combo: 0, shake: 0,
     startTime: G.time, cycleT: 0, vign: 0, eclipseT: 0, surgeT: 0, bossDrops: 0, extracted: 0, graceT: 5, xp: 0, chests: 0, rw: { exp: 0, gil: 0, items: {} }, gorillaBoss: null,
-    mission: 'explore', missionProgress: 0, totalDistance: 0, maxEnergy: 100, killKinds: {}, bounty: null, side: null, weather: 'clear', weatherT: rand(90, 200), wf: 0, boltT: 0, cutsceneT: 0, nightHuntCD: rand(60, 110), nightPack: null, merchant: null, merchantCD: rand(300, 420), rotate: true, sandbox: false, nextSave: G.time + 30 });
+    mission: 'explore', missionProgress: 0, totalDistance: 0, maxEnergy: 100, killKinds: {}, bounty: null, side: null, weather: 'clear', weatherT: rand(90, 200), wf: 0, boltT: 0, cutsceneT: 0, nightHuntCD: rand(60, 110), nightPack: null, merchant: null, merchantCD: rand(300, 420), rotate: true, sandbox: false, nextSave: G.time + 30, revealed: [] });
   Object.assign(PL, { climb: null, mats: { hide: 0, fang: 0, meat: 0, moss: 0, crystal: 0 }, craft: { vest: 0, charm: 0, axeUp: 0, claymoreUp: 0 }, built: { wall: false, tower: false }, critBonus: 0, tree: {}, pts: 0, mealT: 0, unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse']), guard: false, guardT: 0, hp: 150, maxHp: 150, level: 1, dmgMul: 1, regen: 3, enRegen: 11, vx: 0, vz: 0, facing: Math.PI, swing: 0, phase: 0, lastHit: -10, auraT: 0, dashT: 0, rollT: 0, pose: 0,
     vy: 0, grounded: true, jumps: 0, coyote: 0, airT: 0, shootCd: 0,
     atb: 100, atbSegs: 2, owned: ['claws'], items: { potion: 3, ether: 2, elixir: 1 } });
