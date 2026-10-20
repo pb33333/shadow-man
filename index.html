@@ -3832,7 +3832,7 @@ function updateClimb() {
 
 // ═════════════════════════════ CAMP ═════════════════════════════
 // A safe fire near the start: rest to heal, buy supplies, and it saves your game.
-const CAMP = { g: null, x: 0, z: 0, near: false, flame: null, last: 0 };
+const CAMP = { g: null, x: 0, z: 0, near: false, flame: null, last: 0, builds: {} };
 function buildCamp() {
   if (CAMP.g) return;
   let x = 0, z = 0;
@@ -3851,17 +3851,23 @@ const CAMP_BUILDS = { // materials-only (no gil): the camp's own building option
   wall: { name: 'Palisade Wall', icon: '🪵', cost: { hide: 12, fang: 12 }, desc: 'Stakes further out keep beasts further back at night.' },
   tower: { name: 'Watchtower', icon: '🗼', cost: { hide: 10, fang: 10, meat: 10 }, desc: 'See further on the minimap.' },
 };
-function addCampBuilding(kind) { // adds the structure's mesh to the existing camp group; called on purchase and on save load
+function addCampBuilding(kind) { // adds the structure's mesh (as its own sub-group) to the camp; called on purchase and on save load
   if (!CAMP.g) return;
-  const wood = std(0x5a3a1e, { roughness: .9 }), dark = std(0x33240f, { roughness: 1 });
+  if (CAMP.builds[kind]) CAMP.g.remove(CAMP.builds[kind]); // avoid stacking duplicates if called twice (e.g. a save re-applied onto a camp already built this session)
+  const wood = std(0x5a3a1e, { roughness: .9 }), dark = std(0x33240f, { roughness: 1 }), grp = new THREE.Group();
   if (kind === 'wall') {
     for (let i = 0; i < 16; i++) { const a = i / 16 * 6.283, r = 4.6, stake = new THREE.Mesh(new THREE.CylinderGeometry(.05, .09, 1.6, 6), i % 2 ? wood : dark);
-      stake.position.set(Math.cos(a) * r, .8, Math.sin(a) * r); stake.rotation.x = rand(-.05, .05); stake.rotation.z = rand(-.05, .05); CAMP.g.add(stake); }
+      stake.position.set(Math.cos(a) * r, .8, Math.sin(a) * r); stake.rotation.x = rand(-.05, .05); stake.rotation.z = rand(-.05, .05); grp.add(stake); }
   } else if (kind === 'tower') {
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.16, .22, 4.2, 8), wood); pole.position.set(3.8, 2.1, -3.2); CAMP.g.add(pole);
-    const deck = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .2, 8), wood); deck.position.set(3.8, 4.1, -3.2); CAMP.g.add(deck);
-    for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283, rail = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .7, 5), dark); rail.position.set(3.8 + Math.cos(a) * .95, 4.55, -3.2 + Math.sin(a) * .95); CAMP.g.add(rail); }
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.16, .22, 4.2, 8), wood); pole.position.set(3.8, 2.1, -3.2); grp.add(pole);
+    const deck = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .2, 8), wood); deck.position.set(3.8, 4.1, -3.2); grp.add(deck);
+    for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283, rail = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .7, 5), dark); rail.position.set(3.8 + Math.cos(a) * .95, 4.55, -3.2 + Math.sin(a) * .95); grp.add(rail); }
   }
+  CAMP.g.add(grp); CAMP.builds[kind] = grp;
+}
+function resetCampBuildings() { // clears any wall/tower meshes left over from a previous run in this browser session (CAMP.g itself is reused, not rebuilt, by New Game/NG+)
+  if (CAMP.g) for (const k in CAMP.builds) { if (CAMP.builds[k]) CAMP.g.remove(CAMP.builds[k]); }
+  CAMP.builds = {};
 }
 function buyBuilding(kind) { // camp menu action: spend materials once to add a permanent structure
   if (!CAMP.near || PL.built[kind]) return;
@@ -4294,7 +4300,7 @@ function startGame() {
   menu.hidden = true; pauseEl.hidden = true; settingsEl.hidden = true; hud.hidden = false; ctrlHint._faded = false; ctrlHint.style.opacity = '1';
   if (G.daily) playCutscene('📅 DAILY CHALLENGE', G.daily.name.toUpperCase() + ' — ' + G.daily.desc, 4.5);
   canvas.focus(); applyView();
-  buildClimbTrees(); buildCamp(); buildAlly(); resetAlly(); CAMP.near = false; climbHint = false;
+  buildClimbTrees(); resetCampBuildings(); buildCamp(); buildAlly(); resetAlly(); CAMP.near = false; climbHint = false;
   placeEnemies(); // Place enemies naturally in the world (free-roam, no waves)
   startStory();
   showBanner('THE AMAZON', 'Explore. Loot the caches. Something is out there.');
