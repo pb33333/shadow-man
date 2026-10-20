@@ -2465,7 +2465,7 @@ function aimDir(range) {
   const p = hero.root.position;
   const t = G.target && !G.target.dying ? G.target : null;
   if (t) { const dx = t.root.position.x - p.x, dz = t.root.position.z - p.z, d = Math.hypot(dx, dz); if (d < range + 20) return [dx / d, dz / d, t]; }
-  let [fx, fz] = camFwd();
+  let [fx, fz] = [Math.sin(PL.facing), Math.cos(PL.facing)]; // fire the way the player model is actually facing, not the camera
   if (!S.aim) return [fx, fz, null];
   let best = null, bs = -1;
   for (const e of G.enemies) {
