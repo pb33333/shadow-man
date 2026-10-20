@@ -3474,7 +3474,7 @@ const QUESTS = [
       q.relics = 0; const got = msg => () => { q.relics++; G.gil += 120; G.gold += 120; showBanner('RELIC RECOVERED · ' + q.relics + '/3', msg); };
       const z1 = 14, x1 = riverX(z1) + 24;
       addSite('relic', x1, z1, 'Sun Disc', null, got('The Sun Disc hums with warmth.'));
-      addSite('relic', -33, -33, 'Jade Idol', null, got('The Jade Idol, guarded no more.'));
+      addSite('relic', -33, -33, 'Jade Idol', 2.5, got('The Jade Idol, guarded no more.'));
       addSite('relic', -30, 0, 'Golden Feather', 11.5, got('The Golden Feather, high above the canopy.'));
       [[x1 - 5, z1 + 6, 'jaguar'], [x1 + 6, z1 - 4, 'jaguar'], [x1 + 2, z1 + 10, 'tarantula']].forEach(([x, z, k]) => spawnEnemy(x, z, k));
     },
