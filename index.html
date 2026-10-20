@@ -3759,8 +3759,8 @@ function updateCamera(dt) {
   if (!G.on && !G.ended) {
     const a = G.time * .05; camera.position.set(Math.sin(a) * 26, 7 + Math.sin(G.time * .2), Math.cos(a) * 26); camera.lookAt(0, 3, 0); skyGroup.position.copy(camera.position); updateSun(camera.position); return;
   }
-  // Debug: log camera and player positions
-  if (G.time % 1 < .016 && G.on) console.log('cam:', camera.position.x.toFixed(1), camera.position.z.toFixed(1), 'player:', p.x.toFixed(1), p.z.toFixed(1));
+  // Debug
+  if (G.time % 1 < .016 && G.on) console.log('cam mode:', S.cam, 'target:', camTarget.x.toFixed(1), camTarget.z.toFixed(1), 'player:', p.x.toFixed(1), p.z.toFixed(1), 'cam pos:', camera.position.x.toFixed(1), camera.position.z.toFixed(1));
   const t = G.target && !G.target.dying ? G.target : null;
   if (t && S.lockCam && G.on && !G.paused) { // keep the locked target in front of the camera
     const want = Math.atan2(-(t.root.position.x - p.x), -(t.root.position.z - p.z)); camYaw = angDamp(camYaw, want, 4, dt);
