@@ -167,6 +167,23 @@ body.touch #arise b { display: none; }
 .stcard .st-icon { font-size: 28px; }
 .stcard .st-name { font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-align: center; color: #fff; }
 .stcard .st-desc { font-size: .68rem; color: var(--dim); text-align: center; line-height: 1.4; }
+  #lb-panel { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+  #lb-submit-row { display: flex; gap: 8px; }
+  #lb-name-input { flex: 1; min-width: 0; background: rgba(20,14,50,.88); border: 1.5px solid rgba(190,160,255,.35); border-radius: 10px; padding: 10px 12px; color: #fff; font: inherit; font-weight: 700; letter-spacing: .02em; }
+  #lb-name-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 12px rgba(255,211,106,.35); }
+  #lb-submit-btn { flex: 0 0 auto; background: linear-gradient(135deg, var(--gold), #ffb347); border: none; border-radius: 10px; padding: 10px 16px; font-weight: 900; letter-spacing: .06em; font-size: .75rem; color: #241600; cursor: pointer; }
+  #lb-submit-btn:active { transform: scale(.97); }
+  #lb-submit-btn:disabled { opacity: .5; cursor: default; }
+  #lb-table-wrap { max-height: 46vh; overflow-y: auto; border-radius: 12px; border: 1.5px solid rgba(190,160,255,.25); }
+  table.lb-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  table.lb-table th { position: sticky; top: 0; background: rgba(20,14,50,.96); color: var(--dim); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; text-align: left; padding: 8px 10px; }
+  table.lb-table th:last-child, table.lb-table td:last-child { text-align: right; }
+  table.lb-table td { padding: 8px 10px; color: #fff; border-top: 1px solid rgba(190,160,255,.15); }
+  table.lb-table tr:nth-child(even) td { background: rgba(190,160,255,.05); }
+  table.lb-table tr.lb-me td { background: rgba(255,211,106,.14); }
+  table.lb-table td.lb-rank { font-weight: 900; color: var(--gold); width: 2.4em; }
+  table.lb-table td.lb-score { font-weight: 800; font-variant-numeric: tabular-nums; }
+  #lb-empty { text-align: center; color: var(--dim); font-size: .78rem; padding: 18px 0; }
 @keyframes vic { 0% { opacity: 0; transform: translate(-50%, 12px) } 7% { opacity: 1; transform: translate(-50%, 0) } 86% { opacity: 1 } 100% { opacity: 0 } }
 
 #tactical { position: fixed; left: 50%; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px) + 10px) + 110px); transform: translateX(-50%); width: min(600px, 94vw); z-index: 60; padding: 10px 14px 12px; }
@@ -668,29 +685,49 @@ function showAchievements() {
   close.addEventListener('click', closeSkillTree); cards.appendChild(close);
   $('skill-tree').hidden = false;
 }
-function showLeaderboard() {
-  if (skillTreeOpen) return; skillTreeOpen = true; G.noPause = true;
-  $('st-title').textContent = 'LEADERBOARD'; $('st-level').textContent = 'Top gil hoarders';
-  const cards = $('st-cards'); cards.innerHTML = '<div class="stcard"><div class="st-icon">⏳</div><div class="st-name">Loading…</div><div class="st-desc"></div></div>';
-  const render = rows => {
-    cards.innerHTML = '';
-    const submit = document.createElement('div'); submit.className = 'stcard';
-    submit.innerHTML = '<div class="st-icon">📤</div><div class="st-name">Submit my score</div><div class="st-desc">💰 ' + G.gil.toLocaleString() + ' gil</div>';
-    submit.addEventListener('click', () => {
-      const name = (prompt('Your name (max 20 chars):') || '').trim();
-      if (!name) return;
-      lbSubmit(name, G.gil).then(showLeaderboard).catch(() => notify('Could not submit score', '#ff8a80'));
-    });
-    cards.appendChild(submit);
-    (rows || []).forEach((r, i) => { const c = document.createElement('div'); c.className = 'stcard';
-      c.innerHTML = '<div class="st-icon">#' + (i + 1) + '</div><div class="st-name">' + r.name + '</div><div class="st-desc">💰 ' + r.score.toLocaleString() + '</div>'; cards.appendChild(c); });
-    if (!rows || !rows.length) { const e = document.createElement('div'); e.className = 'stcard'; e.innerHTML = '<div class="st-icon">—</div><div class="st-name">No scores yet</div><div class="st-desc">Be the first</div>'; cards.appendChild(e); }
-    const close = document.createElement('div'); close.className = 'stcard'; close.innerHTML = '<div class="st-icon">✖</div><div class="st-name">Close</div><div class="st-desc"></div>';
-    close.addEventListener('click', closeSkillTree); cards.appendChild(close);
-  };
-  lbFetchTop().then(render).catch(() => render(null));
-  $('skill-tree').hidden = false;
-}
+const lbEsc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function showLeaderboard() {
+      if (skillTreeOpen) return; skillTreeOpen = true; G.noPause = true;
+      $('st-title').textContent = 'LEADERBOARD'; $('st-level').textContent = 'Top gil hoarders';
+      const cards = $('st-cards');
+      const savedName = localStorage.getItem('lbName') || '';
+      cards.innerHTML =
+            '<div id="lb-panel">' +
+              '<div id="lb-submit-row">' +
+                '<input id="lb-name-input" maxlength="20" placeholder="Your name" value="' + lbEsc(savedName) + '">' +
+                '<button id="lb-submit-btn">📤 SUBMIT ' + G.gil.toLocaleString() + ' GIL</button>' +
+              '</div>' +
+              '<div id="lb-table-wrap"><div id="lb-empty">⏳ Loading…</div></div>' +
+              '<button class="btn ghost" id="lb-close-btn">CLOSE</button>' +
+            '</div>';
+      $('lb-close-btn').addEventListener('click', closeSkillTree);
+      const nameInput = $('lb-name-input'), submitBtn = $('lb-submit-btn');
+      submitBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            if (!name) { nameInput.focus(); return; }
+            localStorage.setItem('lbName', name);
+            submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
+            lbSubmit(name, G.gil).then(() => { notify('Score submitted!', '#ffd36a'); render(lastRows); })
+              .catch(() => { notify('Could not submit score', '#ff8a80'); submitBtn.disabled = false; submitBtn.textContent = '📤 SUBMIT ' + G.gil.toLocaleString() + ' GIL'; });
+      });
+      let lastRows = null;
+      const render = rows => {
+            lastRows = rows;
+            const wrap = $('lb-table-wrap');
+            if (!wrap) return;
+            const myName = localStorage.getItem('lbName') || '';
+            if (!rows || !rows.length) { wrap.innerHTML = '<div id="lb-empty">No scores yet — be the first</div>'; return; }
+            let html = '<table class="lb-table"><thead><tr><th>#</th><th>Name</th><th>Gil</th></tr></thead><tbody>';
+            rows.forEach((r, i) => {
+                    const mine = r.name === myName;
+                    html += '<tr class="' + (mine ? 'lb-me' : '') + '"><td class="lb-rank">' + (i + 1) + '</td><td>' + lbEsc(r.name) + '</td><td class="lb-score">💰 ' + r.score.toLocaleString() + '</td></tr>';
+            });
+            html += '</tbody></table>';
+            wrap.innerHTML = html;
+      };
+      lbFetchTop().then(render).catch(() => render(null));
+      $('skill-tree').hidden = false;
+  }
 const nodeGot = n => !!PL.tree[n.id] || !!(n.abil && PL.unlockedAbils.has(n.abil)); // an ability bought at the shop counts
 const nodeOpen = n => { const b = TREE.find(x => x.nodes.includes(n)); return !!b && b.nodes.slice(0, b.nodes.indexOf(n)).every(nodeGot); };
 const SKILL_ABILS = POWERS.filter(p => !['strike', 'summon', 'bh', 'eclipse'].includes(p.id));
