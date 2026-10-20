@@ -3610,7 +3610,7 @@ function updateHints() {
   if (CAMP.near) hint('camp', S.touchUI ? 'Camp: 🛒 Shop and 📜 Bounty buttons' : 'Camp: U shop, I bounty board, J/K craft gear');
   if (CANOE.g && canoeNear() && !CANOE.on) hint('canoe', S.touchUI ? 'Tap ⛵ to board the canoe' : 'Press L to board the canoe');
 }
-function updateMission() { updateHints(); updateCanoe(); updateCtx(); updateDepths(); updateSites(); updateQuest(); if (!REGION) { updateCamp(); updateAlly(); } updateClimb(); if (G.time >= G.nextSave) { G.nextSave = G.time + 30; writeSave(); } }
+function updateMission() { updateHints(); updateCanoe(); updateCtx(); updateDepths(); updateSites(); updateQuest(); if (!REGION) { updateCamp(); updateAlly(); } updateCampYield(); updateClimb(); if (G.time >= G.nextSave) { G.nextSave = G.time + 30; writeSave(); } }
 function updateHUD(dt) {
   if (PL.mealT > 0) PL.mealT = Math.max(0, PL.mealT - dt);
   updateMission();
@@ -3832,7 +3832,7 @@ function updateClimb() {
 
 // ═════════════════════════════ CAMP ═════════════════════════════
 // A safe fire near the start: rest to heal, buy supplies, and it saves your game.
-const CAMP = { g: null, x: 0, z: 0, near: false, flame: null, last: 0, builds: {} };
+const CAMP = { g: null, x: 0, z: 0, near: false, flame: null, last: 0, builds: {}, nextYield: 0 };
 function buildCamp() {
   if (CAMP.g) return;
   let x = 0, z = 0;
@@ -3867,7 +3867,15 @@ function addCampBuilding(kind) { // adds the structure's mesh (as its own sub-gr
 }
 function resetCampBuildings() { // clears any wall/tower meshes left over from a previous run in this browser session (CAMP.g itself is reused, not rebuilt, by New Game/NG+)
   if (CAMP.g) for (const k in CAMP.builds) { if (CAMP.builds[k]) CAMP.g.remove(CAMP.builds[k]); }
-  CAMP.builds = {};
+  CAMP.builds = {}; CAMP.nextYield = 0;
+}
+function updateCampYield() { // the watchtower crew brings back a trickle of supplies every couple of minutes, even while you're off exploring
+  if (!PL.built.tower) return;
+  if (!CAMP.nextYield) { CAMP.nextYield = G.time + 120; return; }
+  if (G.time < CAMP.nextYield) return;
+  CAMP.nextYield = G.time + 120;
+  PL.mats.hide++; PL.mats.fang++; PL.mats.meat++;
+  notify('🗼 The watchtower crew brought back supplies · +1 🟫 +1 🦷 +1 🍖', '#ffd36a');
 }
 function buyBuilding(kind) { // camp menu action: spend materials once to add a permanent structure
   if (!CAMP.near || PL.built[kind]) return;
