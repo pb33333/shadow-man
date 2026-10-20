@@ -205,8 +205,13 @@ table.lb-table td.lb-score { font-weight: 800; font-variant-numeric: tabular-num
 #eclipse-tint { position: fixed; inset: 0; pointer-events: none; z-index: 8; opacity: 0; background: radial-gradient(ellipse at center, rgba(60,0,90,.05) 30%, rgba(40,0,70,.65) 100%); }
 #crit-flash { position: fixed; inset: 0; pointer-events: none; z-index: 7; opacity: 0; background: white; transition: opacity .05s; }
 #boss-bar { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10; opacity: 0; transition: opacity .3s; font-family: Arial, sans-serif; }
-#minimap-container { position: fixed; top: max(20px, env(safe-area-inset-top, 0px) + 14px); right: max(12px, env(safe-area-inset-right, 0px) + 8px); z-index: 40; pointer-events: auto; cursor: pointer; }
-#minimap { width: 160px; height: 160px; background: rgba(20,10,40,.8); border: 2px solid rgba(100,200,255,.6); border-radius: 8px; display: block; image-rendering: pixelated; }
+#minimap-container { position: fixed; top: max(20px, env(safe-area-inset-top, 0px) + 14px); right: max(12px, env(safe-area-inset-right, 0px) + 8px); z-index: 40; pointer-events: auto; cursor: pointer; width: 160px; height: 160px; }
+#minimap { width: 160px; height: 160px; background: rgba(20,10,40,.9); border: 2px solid rgba(100,200,255,.6); border-radius: 50%; display: block; image-rendering: pixelated; transition: all .3s ease; }
+#minimap-container.expanded { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40vh; height: 40vh; right: auto; top: auto; }
+#minimap-container.expanded #minimap { width: 100%; height: 100%; border-radius: 50%; }
+#minimap-backdrop { display: none; position: fixed; inset: 0; z-index: 39; }
+#minimap-container.expanded ~ #minimap-backdrop { display: block; }
+body #minimap-backdrop { pointer-events: auto; }
 #boss-bar-name { color: #a66bff; font-size: 16px; font-weight: bold; text-align: center; text-shadow: 0 0 8px rgba(166,107,255,.5); margin-bottom: 4px; }
 #boss-bar-fill { width: 200px; height: 12px; background: #1a1a2e; border: 2px solid #a66bff; border-radius: 4px; overflow: hidden; box-shadow: 0 0 12px rgba(166,107,255,.3); }
 #boss-bar-hp { height: 100%; background: linear-gradient(90deg, #ff4444 0%, #ffaa44 50%, #44ff44 100%); width: 100%; transition: width .15s; }
@@ -368,6 +373,7 @@ body.touch .keys.mob { display: flex; }
   <div id="banner"><div class="b1"></div><div class="b2"></div></div>
   <div id="letterbox"><div class="bar top"></div><div class="bar bot"></div><div id="cs-card"><div class="ct"></div><div class="cs"></div></div><div id="cs-skip">tap or press any key to skip</div></div>
   <div id="minimap-container"><canvas id="minimap" width="160" height="160"></canvas></div>
+  <div id="minimap-backdrop"></div>
   <div id="mobile-controls">
     <button id="crawl-control" class="mobile-btn" title="Crawl">🐾</button>
     <button id="skills-control" class="mobile-btn" title="Skills">✨</button>
@@ -1173,30 +1179,39 @@ function init() {
 
   // Minimap initialization
   const minimapCanvas = $('minimap'), minimapCtx = minimapCanvas.getContext('2d');
+  const minimapContainer = $('minimap-container'), minimapBackdrop = $('minimap-backdrop');
   let minimapExpanded = false;
   const MINIMAP_SCALE = .08; // world units to canvas pixels
-  minimapCanvas.addEventListener('click', () => {
+
+  const closeMap = () => {
+    if (minimapExpanded) {
+      minimapExpanded = false;
+      minimapContainer.classList.remove('expanded');
+    }
+  };
+
+  minimapCanvas.addEventListener('click', (e) => {
+    e.stopPropagation();
     minimapExpanded = !minimapExpanded;
-    minimapCanvas.width = minimapExpanded ? 320 : 160;
-    minimapCanvas.height = minimapExpanded ? 320 : 160;
-    minimapCanvas.style.width = (minimapExpanded ? 320 : 160) + 'px';
-    minimapCanvas.style.height = (minimapExpanded ? 320 : 160) + 'px';
+    minimapContainer.classList.toggle('expanded');
   });
+  minimapBackdrop.addEventListener('click', closeMap);
   function renderMinimap() {
     if (!G.on) return;
-    const w = minimapCanvas.width, h = minimapCanvas.height, cx = w / 2, cy = h / 2;
+    const w = 160, h = 160, cx = w / 2, cy = h / 2;
+    const scale = minimapExpanded ? .04 : .08; // smaller = zoomed out = more map visible
     minimapCtx.fillStyle = 'rgba(20,10,40,.9)'; minimapCtx.fillRect(0, 0, w, h);
 
     // Draw compass rose (cardinal directions)
-    minimapCtx.fillStyle = 'rgba(100,200,255,.3)'; minimapCtx.font = (minimapExpanded ? '12px' : '10px') + ' Arial'; minimapCtx.textAlign = 'center'; minimapCtx.textBaseline = 'middle';
-    const pad = minimapExpanded ? 12 : 8;
+    minimapCtx.fillStyle = 'rgba(100,200,255,.4)'; minimapCtx.font = '11px Arial'; minimapCtx.textAlign = 'center'; minimapCtx.textBaseline = 'middle';
+    const pad = 10;
     minimapCtx.fillText('N', cx, pad); minimapCtx.fillText('E', w-pad, cy); minimapCtx.fillText('S', cx, h-pad); minimapCtx.fillText('W', pad, cy);
 
     // Draw known locations
     const locColor = { relic: '#ffd36a', camp: '#ffb347', gate: '#a66bff' };
-    const dotSize = minimapExpanded ? 3 : 2;
+    const dotSize = minimapExpanded ? 2 : 2;
     G.sites?.forEach(site => {
-      const sx = cx + site.x * MINIMAP_SCALE, sy = cy + site.z * MINIMAP_SCALE;
+      const sx = cx + site.x * scale, sy = cy + site.z * scale;
       if (sx > 0 && sx < w && sy > 0 && sy < h) {
         minimapCtx.fillStyle = locColor[site.kind] || '#888';
         minimapCtx.fillRect(sx - dotSize, sy - dotSize, dotSize*2, dotSize*2);
@@ -1205,7 +1220,7 @@ function init() {
 
     // Draw player as small dot
     if (hero) {
-      const px = cx + hero.root.position.x * MINIMAP_SCALE, py = cy + hero.root.position.z * MINIMAP_SCALE;
+      const px = cx + hero.root.position.x * scale, py = cy + hero.root.position.z * scale;
       minimapCtx.fillStyle = '#00ff88'; minimapCtx.beginPath(); minimapCtx.arc(px, py, minimapExpanded ? 4 : 3, 0, 6.28); minimapCtx.fill();
     }
 
