@@ -2425,6 +2425,8 @@ function hitEnemy(e, dmg, kx, kz, kb, col, stgMul, noCrit) {
   const final = Math.max(1, Math.round(dmg * mult));
   e.hp -= final; e.flash = 1; G.ult = Math.min(100, G.ult + final * .012); G.waveDmgDealt += final;
   const kbm = e.boss ? .12 : e.stgT > 0 ? .3 : 1; e.kbx += kx * kb * kbm; e.kbz += kz * kb * kbm;
+  // Knockback dust: visual feedback on momentum transfer
+  if (kb > 0 && kbm > 0) { const gy = floorAt(e.root.position.x, e.root.position.z); puff(e.root.position.x, gy + .2, e.root.position.z, e.boss ? 8 : 4, kb * kbm * 1.2, e.scale); }
   if (e.stgT <= 0) { e.stg += (final / e.maxHp * 120 + 1.2) * (stgMul == null ? 1 : stgMul) * (e.boss ? .55 : 1); e.stgHold = 2; if (e.stg >= 100) staggerEnemy(e); }
   const p = e.root.position;
   popText(p.x, p.y + e.T.h * e.scale * .8 + e.flyH, p.z, final, crit ? null : col, crit ? 'crit' : final >= 80 ? 'big' : '', crit ? 'CRITICAL' : null);
