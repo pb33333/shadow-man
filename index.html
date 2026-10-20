@@ -205,13 +205,17 @@ table.lb-table td.lb-score { font-weight: 800; font-variant-numeric: tabular-num
 #eclipse-tint { position: fixed; inset: 0; pointer-events: none; z-index: 8; opacity: 0; background: radial-gradient(ellipse at center, rgba(60,0,90,.05) 30%, rgba(40,0,70,.65) 100%); }
 #crit-flash { position: fixed; inset: 0; pointer-events: none; z-index: 7; opacity: 0; background: white; transition: opacity .05s; }
 #boss-bar { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10; opacity: 0; transition: opacity .3s; font-family: Arial, sans-serif; }
-#minimap-container { position: fixed; top: max(20px, env(safe-area-inset-top, 0px) + 14px); right: max(12px, env(safe-area-inset-right, 0px) + 8px); z-index: 40; pointer-events: auto; cursor: pointer; width: 160px; height: 160px; }
-#minimap { width: 160px; height: 160px; background: rgba(20,10,40,.9); border: 2px solid rgba(100,200,255,.6); border-radius: 50%; display: block; image-rendering: pixelated; transition: all .3s ease; }
-#minimap-container.expanded { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40vh; height: 40vh; right: auto; top: auto; }
-#minimap-container.expanded #minimap { width: 100%; height: 100%; border-radius: 50%; }
-#minimap-backdrop { display: none; position: fixed; inset: 0; z-index: 39; }
-#minimap-container.expanded ~ #minimap-backdrop { display: block; }
-body #minimap-backdrop { pointer-events: auto; }
+#minimap { cursor: pointer; transition: all .25s ease; position: relative; z-index: 40; pointer-events: auto; }
+#minimap.expanded { position: fixed !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%); width: 42vh !important; height: 42vh !important; z-index: 45; box-shadow: 0 0 40px rgba(0,0,0,.6); }
+#minimap-compass { display: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 42vh; height: 42vh; z-index: 46; pointer-events: none; }
+#minimap-compass.show { display: block; }
+#minimap-compass span { position: absolute; color: rgba(230,240,255,.85); font: 700 15px system-ui, sans-serif; text-shadow: 0 0 6px #000, 0 0 3px #000; }
+#minimap-compass .n { top: -2px; left: 50%; transform: translateX(-50%); }
+#minimap-compass .s { bottom: -2px; left: 50%; transform: translateX(-50%); }
+#minimap-compass .e { right: -2px; top: 50%; transform: translateY(-50%); }
+#minimap-compass .w { left: -2px; top: 50%; transform: translateY(-50%); }
+#minimap-backdrop { display: none; position: fixed; inset: 0; z-index: 44; background: rgba(0,0,0,.4); pointer-events: auto; }
+#minimap-backdrop.show { display: block; }
 #boss-bar-name { color: #a66bff; font-size: 16px; font-weight: bold; text-align: center; text-shadow: 0 0 8px rgba(166,107,255,.5); margin-bottom: 4px; }
 #boss-bar-fill { width: 200px; height: 12px; background: #1a1a2e; border: 2px solid #a66bff; border-radius: 4px; overflow: hidden; box-shadow: 0 0 12px rgba(166,107,255,.3); }
 #boss-bar-hp { height: 100%; background: linear-gradient(90deg, #ff4444 0%, #ffaa44 50%, #44ff44 100%); width: 100%; transition: width .15s; }
@@ -237,8 +241,8 @@ body.touch #joy-hint { display: block; }
 #shoot-btn { display: none !important; }
 #crawl-btn { display: none !important; }
 
-/* New mobile-only touch controls — 2-column grid bottom-left */
-#mobile-controls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); left: max(10px, env(safe-area-inset-left, 0px) + 6px); display: none; grid-template-columns: repeat(2, 56px); grid-auto-rows: 56px; gap: 6px; z-index: 50; pointer-events: none; }
+/* New mobile-only touch controls — 2-column grid bottom-right (left side is movement joystick zone) */
+#mobile-controls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); right: max(10px, env(safe-area-inset-right, 0px) + 6px); display: none; grid-template-columns: repeat(2, 56px); grid-auto-rows: 56px; gap: 6px; z-index: 50; pointer-events: none; }
 body.touch #mobile-controls { display: grid; }
 .mobile-btn { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(100,200,255,.6); background: rgba(12,7,26,.85); color: #fff; font-size: 20px; display: grid; place-items: center; pointer-events: auto; touch-action: none; font-weight: bold; transition: background .1s, transform .1s; }
 .mobile-btn:active { background: rgba(100,200,255,.4); transform: scale(.92); }
@@ -372,8 +376,8 @@ body.touch .keys.mob { display: flex; }
   <div id="notifs"></div>
   <div id="banner"><div class="b1"></div><div class="b2"></div></div>
   <div id="letterbox"><div class="bar top"></div><div class="bar bot"></div><div id="cs-card"><div class="ct"></div><div class="cs"></div></div><div id="cs-skip">tap or press any key to skip</div></div>
-  <div id="minimap-container"><canvas id="minimap" width="160" height="160"></canvas></div>
   <div id="minimap-backdrop"></div>
+  <div id="minimap-compass"><span class="n">N</span><span class="e">E</span><span class="s">S</span><span class="w">W</span></div>
   <div id="mobile-controls">
     <button id="crawl-control" class="mobile-btn" title="Crawl">🐾</button>
     <button id="skills-control" class="mobile-btn" title="Skills">✨</button>
@@ -1177,56 +1181,13 @@ function init() {
   bindInput();
   precompile();
 
-  // Minimap initialization
-  const minimapCanvas = $('minimap'), minimapCtx = minimapCanvas.getContext('2d');
-  const minimapContainer = $('minimap-container'), minimapBackdrop = $('minimap-backdrop');
-  let minimapExpanded = false;
-  const MINIMAP_SCALE = .08; // world units to canvas pixels
-
-  const closeMap = () => {
-    if (minimapExpanded) {
-      minimapExpanded = false;
-      minimapContainer.classList.remove('expanded');
-    }
-  };
-
-  minimapCanvas.addEventListener('click', (e) => {
-    e.stopPropagation();
-    minimapExpanded = !minimapExpanded;
-    minimapContainer.classList.toggle('expanded');
-  });
+  // Minimap: click the existing minimap to expand it center-screen with a compass overlay
+  const minimapBackdrop = $('minimap-backdrop'), minimapCompass = $('minimap-compass');
+  G.mapExpanded = false;
+  const setMapExpanded = v => { G.mapExpanded = v; mini.width = mini.height = v ? 300 : 150; mini.classList.toggle('expanded', v); minimapBackdrop.classList.toggle('show', v); minimapCompass.classList.toggle('show', v); };
+  const closeMap = () => { if (G.mapExpanded) setMapExpanded(false); };
+  mini.addEventListener('click', e => { e.stopPropagation(); setMapExpanded(!G.mapExpanded); });
   minimapBackdrop.addEventListener('click', closeMap);
-  function renderMinimap() {
-    if (!G.on) return;
-    const w = 160, h = 160, cx = w / 2, cy = h / 2;
-    const scale = minimapExpanded ? .04 : .08; // smaller = zoomed out = more map visible
-    minimapCtx.fillStyle = 'rgba(20,10,40,.9)'; minimapCtx.fillRect(0, 0, w, h);
-
-    // Draw compass rose (cardinal directions)
-    minimapCtx.fillStyle = 'rgba(100,200,255,.4)'; minimapCtx.font = '11px Arial'; minimapCtx.textAlign = 'center'; minimapCtx.textBaseline = 'middle';
-    const pad = 10;
-    minimapCtx.fillText('N', cx, pad); minimapCtx.fillText('E', w-pad, cy); minimapCtx.fillText('S', cx, h-pad); minimapCtx.fillText('W', pad, cy);
-
-    // Draw known locations
-    const locColor = { relic: '#ffd36a', camp: '#ffb347', gate: '#a66bff' };
-    const dotSize = minimapExpanded ? 2 : 2;
-    G.sites?.forEach(site => {
-      const sx = cx + site.x * scale, sy = cy + site.z * scale;
-      if (sx > 0 && sx < w && sy > 0 && sy < h) {
-        minimapCtx.fillStyle = locColor[site.kind] || '#888';
-        minimapCtx.fillRect(sx - dotSize, sy - dotSize, dotSize*2, dotSize*2);
-      }
-    });
-
-    // Draw player as small dot
-    if (hero) {
-      const px = cx + hero.root.position.x * scale, py = cy + hero.root.position.z * scale;
-      minimapCtx.fillStyle = '#00ff88'; minimapCtx.beginPath(); minimapCtx.arc(px, py, minimapExpanded ? 4 : 3, 0, 6.28); minimapCtx.fill();
-    }
-
-    // Border
-    minimapCtx.strokeStyle = 'rgba(100,200,255,.6)'; minimapCtx.lineWidth = 2; minimapCtx.strokeRect(0, 0, w, h);
-  }
 
   clock = new THREE.Clock();
   (function frame() {
@@ -1237,7 +1198,6 @@ function init() {
     try { update(dt); } catch (e) { console.error('Game update error:', e); }
     try {
       if (effBloom()) composer.render(dt); else renderer.render(scene, camera);
-      renderMinimap();
     } catch (e) {
       console.error('Game render error:', e);
     }
@@ -3791,7 +3751,7 @@ function updateHUD(dt) {
   if (S.minimap && (miniTick = (miniTick + 1) % 3) === 0) drawMinimap();
 }
 function drawMinimapDepths() { // the chamber: just its wall, the creatures, and you
-  const W = 150, C = 75, SC = C / 40, cs = Math.cos(camYaw), sn = Math.sin(camYaw), pp = hero.root.position;
+  const W = mini.width, C = W / 2, zoomMul = G.mapExpanded ? 1.8 : 1, SC = C / (40 * zoomMul), cs = Math.cos(camYaw), sn = Math.sin(camYaw), pp = hero.root.position;
   const tr = (x, z) => { const dx = x - pp.x, dz = z - pp.z; return [(dx * cs - dz * sn) * SC, (dx * sn + dz * cs) * SC]; };
   mctx.clearRect(0, 0, W, W); mctx.save(); mctx.beginPath(); mctx.arc(C, C, C - 1, 0, Math.PI * 2); mctx.clip();
   const [wx, wy] = tr(0, 0); mctx.fillStyle = 'rgba(57,255,216,.08)'; mctx.strokeStyle = 'rgba(57,255,216,.6)'; mctx.lineWidth = 2; mctx.beginPath(); mctx.arc(C + wx, C + wy, REGION.R * SC, 0, Math.PI * 2); mctx.fill(); mctx.stroke();
@@ -3804,7 +3764,7 @@ function drawMinimapDepths() { // the chamber: just its wall, the creatures, and
 }
 function drawMinimap() {
   if (REGION) { drawMinimapDepths(); return; }
-  const W = 150, C = 75, SC = C / (PL.built.tower ? 95 : 70), cs = Math.cos(camYaw), sn = Math.sin(camYaw), pp = hero.root.position; // the watchtower sees further
+  const W = mini.width, C = W / 2, zoomMul = G.mapExpanded ? 1.8 : 1, SC = C / ((PL.built.tower ? 95 : 70) * zoomMul), cs = Math.cos(camYaw), sn = Math.sin(camYaw), pp = hero.root.position; // the watchtower sees further
   const tr = (x, z) => { const dx = x - pp.x, dz = z - pp.z; return [(dx * cs - dz * sn) * SC, (dx * sn + dz * cs) * SC]; };
   mctx.clearRect(0, 0, W, W);
   mctx.save(); mctx.beginPath(); mctx.arc(C, C, C - 1, 0, Math.PI * 2); mctx.clip();
