@@ -2449,7 +2449,7 @@ function hitEnemy(e, dmg, kx, kz, kb, col, stgMul, noCrit) {
 function staggerEnemy(e) {
   e.stg = 100; e.stgT = e.boss ? 6 : 5; e.stgBonus = 1.6; e.stun = e.stgT; e.atk = 0; e.inBH = null;
   const p = e.root.position; popText(p.x, p.y + e.T.h * e.scale + e.flyH + .5, p.z, 'STAGGERED', '#ffd36a', 'big');
-  ring(p.x, p.y + .3, p.z, 5 * e.scale, 0xffd36a, .6); sfx('stagger'); G.hitstop = Math.max(G.hitstop, .1); shake(.3); gainATB(20);
+  ring(p.x, p.y + .3, p.z, 5 * e.scale, 0xffd36a, .6); burst(p.x, p.y + e.T.h * e.scale * .5, p.z, e.boss ? 20 : 12, [0xffd36a, 0xffffff], e.boss ? 8 : 5, .4, .6, 2); sfx('stagger'); G.hitstop = Math.max(G.hitstop, .1); shake(.3); gainATB(20);
 }
 function killEnemy(e) {
   e.dying = .45; if (e.bar) e.bar.visible = e.barBg.visible = false;
