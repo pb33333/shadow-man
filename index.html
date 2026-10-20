@@ -2464,6 +2464,8 @@ function killEnemy(e) {
   if (e.nightElite) { G.gil += 40; G.gold += 40; }
   if (e.boss || Math.random() < .4) { const m = ['jaguar', 'gorilla', 'bat', 'eagle', 'frog'].includes(e.kind) ? 'hide' : 'fang', n = (e.boss ? 4 : 1) * (e.nightElite ? 2 : 1); PL.mats[m] += n; popText(p.x, y + 3.4 * e.scale, p.z, '+' + n + (m === 'hide' ? ' 🟫 Hide' : ' 🦷 Fang'), '#ffd9a0'); }
   if (!['piranha', 'eel'].includes(e.kind) && Math.random() < .35) { const n = e.boss ? 3 : 1; PL.mats.meat += n; popText(p.x, y + 4 * e.scale, p.z, '+' + n + ' 🍖 Meat', '#ffb070'); }
+  if (REGION === MIRE && Math.random() < .3) { const n = e.boss ? 3 : 1; PL.mats.moss += n; popText(p.x, y + 4.6 * e.scale, p.z, '+' + n + ' 🌿 Moss', '#9dff6a'); } // the Mire's own signature material
+  if (REGION === FROST && Math.random() < .3) { const n = e.boss ? 3 : 1; PL.mats.crystal += n; popText(p.x, y + 4.6 * e.scale, p.z, '+' + n + ' 💎 Crystal', '#9ad4f0'); } // Frostpeak's own signature material
   if (G.eclipseT > 0 && G.minions.length < S.army) riseShadow({ x: p.x, z: p.z, kind: e.kind, boss: e.boss }, .3); // eclipse raises the fallen for free
   else addCorpse(e);
   if (G.target === e) G.target = null;
@@ -2530,14 +2532,15 @@ function doShoot() {
   G.shots.push({ m, col: 0x7fd8ff, vx: fx * 64, vy: 0, vz: fz * 64, life: 1.5, dmg: 22 * dmgScale(), tgt: null, straight: true });
   sfx('bolt'); gainATB(3);
 }
+function weaponUpBonus(id) { const u = WEAPON_UPGRADES[id]; return u && PL.craft[id + 'Up'] ? u.dmg : 0; } // the Mire/Frost edge upgrades, applied on top of a weapon's base dmg
 function doStrike() {
   if (G.cd.strike > 0 || PL.rollT > 0 || PL.guard) return;
-  const W = WEAPONS[PL.weapon];
+  const W = WEAPONS[PL.weapon], wUp = weaponUpBonus(PL.weapon);
   G.combo = (G.combo + 1) % 3; const nova = G.combo === 0 && !W.ranged;
   G.cd.strike = W.cd * (nova ? 1.5 : 1);
   const [fx, fz, tgt] = aimDir(W.ranged ? 40 : W.reach + 3); PL.strikeDir = Math.atan2(fx, fz); PL.swing = .28; sfx('swing');
   const p = hero.root.position;
-  if (W.ranged) { const n = G.combo === 0 && !W.arrow ? 3 : 1; for (let i = 0; i < n; i++) fireBolt(p.x + fx * .8, p.y + 1.6, p.z + fz * .8, fx, fz, tgt, W.dmg * dmgScale(), i, n, W.arrow ? W.col : undefined); gainATB(6); return; }
+  if (W.ranged) { const n = G.combo === 0 && !W.arrow ? 3 : 1; for (let i = 0; i < n; i++) fireBolt(p.x + fx * .8, p.y + 1.6, p.z + fz * .8, fx, fz, tgt, (W.dmg + wUp) * dmgScale(), i, n, W.arrow ? W.col : undefined); gainATB(6); return; }
   slashFx(PL.strikeDir, nova ? 'nova' : W.dot < -.4 ? 'wide' : 'slash', nova ? 0x2ff5d2 : W.col);
   if (PL.weapon === 'spear') { const ln = new THREE.Mesh(GEO.cyl, glowMat(W.col)); ln.userData.own = true; ln.position.set(p.x + fx * 3.8, p.y + 1.3, p.z + fz * 3.8); ln.rotation.set(Math.PI / 2, PL.strikeDir, 0, 'YXZ'); addFx(ln, .2, (o, k) => { o.scale.set(.06 * (1 - k), 7.5, .06 * (1 - k)); }); }
   for (let k = 0; k < (nova ? 40 : 14); k++) { const a = PL.strikeDir + (nova ? rand(0, 6.28) : rand(-1, 1)), sp = rand(6, 12); emit(p.x + Math.sin(a) * 1.4, p.y + 1.3 + rand(-.3, .4), p.z + Math.cos(a) * 1.4, Math.sin(a) * sp, rand(0, 2), Math.cos(a) * sp, nova ? 0x2ff5d2 : W.col, rand(.2, .45), rand(.25, .45), 0, 4); }
@@ -2552,7 +2555,7 @@ function doStrike() {
     if (d > reach + e.radius && !inShock) continue;
     if (!nova && !inShock && (dx * fx + dz * fz) / d < W.dot && d > 1.6 + e.radius) continue;
     const crit = W.crit && Math.random() < W.crit; if (crit) popText(e.root.position.x, e.root.position.y + e.T.h * e.scale + 1.2, e.root.position.z, 'CRIT!', '#9bf0ff');
-    const dealt = hitEnemy(e, W.dmg * (crit ? 2 : 1) * (nova ? 1.6 : 1) * dmgScale() * rand(.92, 1.08), dx / d, dz / d, nova ? 14 : W.shock ? 12 : 8, null, (W.stg || 1) * (nova ? 1.6 : 1)); hits++;
+    const dealt = hitEnemy(e, (W.dmg + wUp) * (crit ? 2 : 1) * (nova ? 1.6 : 1) * dmgScale() * rand(.92, 1.08), dx / d, dz / d, nova ? 14 : W.shock ? 12 : 8, null, (W.stg || 1) * (nova ? 1.6 : 1)); hits++;
     if (W.lifesteal) PL.hp = Math.min(PL.maxHp, PL.hp + dealt * W.lifesteal);
   }
   if (hits) { shake(nova ? .35 : .18); gainATB(nova ? 16 : 10); if (nova) G.hitstop = Math.max(G.hitstop, .05); }
@@ -3568,7 +3571,7 @@ function startStory() { scatterChests(); G.q = { i: -1, waiting: false, nextAt: 
 function questTarget() { const q = G.q; if (!q || q.i < 0 || q.waiting) return null; const t = QUESTS[q.i].target(q); return t || null; }
 function questHudText() {
   const q = G.q; if (!q) return '';
-  return questHudBase() + (G.bounty ? '  ·  📜 ' + G.bounty.kind + ' ' + Math.min(G.bounty.n, bountyGot(G.bounty)) + '/' + G.bounty.n : '') + '  ·  🟫' + PL.mats.hide + ' 🦷' + PL.mats.fang + ' 🍖' + PL.mats.meat + (PL.mealT > 0 ? ' 🔥' + Math.ceil(PL.mealT) + 's' : '');
+  return questHudBase() + (G.bounty ? '  ·  📜 ' + G.bounty.kind + ' ' + Math.min(G.bounty.n, bountyGot(G.bounty)) + '/' + G.bounty.n : '') + '  ·  🟫' + PL.mats.hide + ' 🦷' + PL.mats.fang + ' 🍖' + PL.mats.meat + (PL.mats.moss ? ' 🌿' + PL.mats.moss : '') + (PL.mats.crystal ? ' 💎' + PL.mats.crystal : '') + (PL.mealT > 0 ? ' 🔥' + Math.ceil(PL.mealT) + 's' : '');
 }
 function questHudBase() {
   const q = G.q; if (!q) return '';
@@ -3596,12 +3599,12 @@ function updateQuest() {
 const ctxEl = $('ctx'); let ctxKey = '';
 function updateCtx() {
   const maya = !!(ALLY.g && ALLY.mode === 'camp' && Math.hypot(hero.root.position.x - ALLY.x, hero.root.position.z - ALLY.z) < 6), camp = CAMP.near;
-  const key = (canoeNear() ? 'k' + CANOE.on : '') + (camp ? 'c' + PL.pts + (G.bounty ? bountyGot(G.bounty) + G.bounty.kind : 'x') + (G.side ? G.side.id + sideReady(G.side) : 'x') + (G.merchant ? 'me' + Math.ceil(G.merchant.t) : 'mx') + G.gil + PL.mats.hide + '.' + PL.mats.fang + '.' + PL.mats.meat + '.' + PL.craft.vest + PL.craft.charm + '.' + Math.ceil(PL.mealT) + '.' + ALLY.met : '') + (maya ? 'm' : '');
+  const key = (canoeNear() ? 'k' + CANOE.on : '') + (camp ? 'c' + PL.pts + (G.bounty ? bountyGot(G.bounty) + G.bounty.kind : 'x') + (G.side ? G.side.id + sideReady(G.side) : 'x') + (G.merchant ? 'me' + Math.ceil(G.merchant.t) : 'mx') + G.gil + PL.mats.hide + '.' + PL.mats.fang + '.' + PL.mats.meat + '.' + PL.mats.moss + '.' + PL.mats.crystal + '.' + PL.craft.vest + PL.craft.charm + PL.craft.axeUp + PL.craft.claymoreUp + '.' + Math.ceil(PL.mealT) + '.' + ALLY.met + '.' + PL.built.wall + PL.built.tower : '') + (maya ? 'm' : '');
   if (key === ctxKey) return; ctxKey = key; ctxEl.classList.toggle('on', !!key); ctxEl.innerHTML = '';
   const add = (t, f) => { const b = document.createElement('button'); b.textContent = t; b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on) f(); ctxKey = ''; }); ctxEl.appendChild(b); };
   if (maya) add('💬 Talk', mayaSpeak);
   if (canoeNear()) add(CANOE.on ? '⬅ Leave canoe' : '⛵ Canoe', toggleCanoe);
-  if (camp) { add('🛒 Shop', showShop); add('🌳 Skills' + (PL.pts ? ' ★' + PL.pts : ''), () => showTree('game')); add('🍖 Cook' + (PL.mealT > 0 ? ' (' + Math.ceil(PL.mealT) + 's)' : ''), cookMeat); if (ALLY.met) add(!G.side ? '📋 Errand' : sideReady(G.side) ? '📋 Turn in' : '📋 ' + G.side.name, sideAction); if (G.merchant) add('🧳 Merchant (' + Math.ceil(G.merchant.t) + 's)', showMerchant); add(!G.bounty ? '📜 Bounty' : bountyGot(G.bounty) >= G.bounty.n ? '📜 Claim' : '📜 ' + bountyGot(G.bounty) + '/' + G.bounty.n, bountyAction); add('🧪 40g', () => buyItem('potion', 40)); add('🔮 70g', () => buyItem('ether', 70)); add('🟫 Vest ' + (3 + 2 * PL.craft.vest), () => craftGear('vest')); add('🦷 Charm ' + (3 + 2 * PL.craft.charm), () => craftGear('charm')); if (!PL.built.wall) add('🪵 Wall 12🟫+12🦷', () => buyBuilding('wall')); if (!PL.built.tower) add('🗼 Tower 10🟫+10🦷+10🍖', () => buyBuilding('tower')); }
+  if (camp) { add('🛒 Shop', showShop); add('🌳 Skills' + (PL.pts ? ' ★' + PL.pts : ''), () => showTree('game')); add('🍖 Cook' + (PL.mealT > 0 ? ' (' + Math.ceil(PL.mealT) + 's)' : ''), cookMeat); if (ALLY.met) add(!G.side ? '📋 Errand' : sideReady(G.side) ? '📋 Turn in' : '📋 ' + G.side.name, sideAction); if (G.merchant) add('🧳 Merchant (' + Math.ceil(G.merchant.t) + 's)', showMerchant); add(!G.bounty ? '📜 Bounty' : bountyGot(G.bounty) >= G.bounty.n ? '📜 Claim' : '📜 ' + bountyGot(G.bounty) + '/' + G.bounty.n, bountyAction); add('🧪 40g', () => buyItem('potion', 40)); add('🔮 70g', () => buyItem('ether', 70)); add('🟫 Vest ' + (3 + 2 * PL.craft.vest), () => craftGear('vest')); add('🦷 Charm ' + (3 + 2 * PL.craft.charm), () => craftGear('charm')); if (!PL.built.wall) add('🪵 Wall 12🟫+12🦷', () => buyBuilding('wall')); if (!PL.built.tower) add('🗼 Tower 10🟫+10🦷+10🍖', () => buyBuilding('tower')); if (!PL.craft.axeUp && PL.mats.moss) add('🌿 Axe Edge 15🌿', () => craftWeaponUpgrade('axe')); if (!PL.craft.claymoreUp && PL.mats.crystal) add('💎 Claymore Edge 15💎', () => craftWeaponUpgrade('claymore')); }
 }
 function hint(k, msg) { try { const h = JSON.parse(localStorage.getItem('shadowman-hints') || '{}'); if (h[k]) return; h[k] = 1; localStorage.setItem('shadowman-hints', JSON.stringify(h)); } catch (e) {} notify('💡 ' + msg, '#9ad'); }
 function updateHints() {
@@ -3961,6 +3964,18 @@ function craftGear(kind) { // camp crafting: hides make a vest (+20 max HP), fan
   if (vest) { PL.maxHp += 20; PL.hp += 20; } else PL.critBonus = (PL.critBonus || 0) + .04;
   sfx('pickup'); notify('Crafted ' + nm_ + ' ' + PL.craft[k] + '/4 · ' + (vest ? 'max HP ' + PL.maxHp : 'crit +' + Math.round(PL.critBonus * 100) + '%'), '#ffd36a');
 }
+const WEAPON_UPGRADES = { // one-time edge for a weapon bought from each biome's own material — gives old biomes a reason to revisit
+  axe: { mat: 'moss', cost: 15, dmg: 18, name: 'Mire-Honed Edge', icon: '🌿' },
+  claymore: { mat: 'crystal', cost: 15, dmg: 25, name: 'Frost-Forged Edge', icon: '💎' },
+};
+function craftWeaponUpgrade(id) { // camp crafting: a biome material permanently sharpens the matching weapon
+  if (!CAMP.near) return;
+  const u = WEAPON_UPGRADES[id], k = id + 'Up';
+  if (PL.craft[k]) { notify(u.name + ' is already forged', '#ffd36a'); return; }
+  if (PL.mats[u.mat] < u.cost) { notify(u.name + ' needs ' + u.cost + ' ' + u.mat + ' (' + PL.mats[u.mat] + ' held)', '#ff8a80'); return; }
+  PL.mats[u.mat] -= u.cost; PL.craft[k] = 1;
+  sfx('pickup'); notify(u.icon + ' ' + u.name.toUpperCase() + ' FORGED', '+' + u.dmg + ' damage for ' + WEAPONS[id].name);
+}
 
 // ═════════════════════════════ WILDLIFE ═════════════════════════════
 // Opt-in ambient animals: real CC0 glTF models (Quaternius "Ultimate Animated Animals") loaded from files published beside the page.
@@ -4176,7 +4191,7 @@ function cleanSave(d) {
     pl: { maxHp, hp: nm(p.hp, 1, maxHp, maxHp), level: Math.floor(nm(p.level, 1, 99, 1)), dmgMul: nm(p.dmgMul, .1, 60, 1), regen: nm(p.regen, 0, 100, 3), enRegen: nm(p.enRegen, 0, 100, 11),
       atbSegs: Math.floor(nm(p.atbSegs, 2, 5, 2)), critBonus: nm(p.critBonus, 0, 1, 0), weapon: owned.includes(p.weapon) ? p.weapon : 'claws', owned,
       items: { potion: Math.floor(nm(it.potion, 0, 99, 3)), ether: Math.floor(nm(it.ether, 0, 99, 2)), elixir: Math.floor(nm(it.elixir, 0, 99, 1)) },
-      mats: { hide: Math.floor(nm(p.mats && p.mats.hide, 0, 999, 0)), fang: Math.floor(nm(p.mats && p.mats.fang, 0, 999, 0)), meat: Math.floor(nm(p.mats && p.mats.meat, 0, 999, 0)) }, mealT: nm(p.mealT, 0, 999, 0), craft: { vest: Math.floor(nm(p.craft && p.craft.vest, 0, 4, 0)), charm: Math.floor(nm(p.craft && p.craft.charm, 0, 4, 0)) },
+      mats: { hide: Math.floor(nm(p.mats && p.mats.hide, 0, 999, 0)), fang: Math.floor(nm(p.mats && p.mats.fang, 0, 999, 0)), meat: Math.floor(nm(p.mats && p.mats.meat, 0, 999, 0)), moss: Math.floor(nm(p.mats && p.mats.moss, 0, 999, 0)), crystal: Math.floor(nm(p.mats && p.mats.crystal, 0, 999, 0)) }, mealT: nm(p.mealT, 0, 999, 0), craft: { vest: Math.floor(nm(p.craft && p.craft.vest, 0, 4, 0)), charm: Math.floor(nm(p.craft && p.craft.charm, 0, 4, 0)), axeUp: Math.floor(nm(p.craft && p.craft.axeUp, 0, 1, 0)), claymoreUp: Math.floor(nm(p.craft && p.craft.claymoreUp, 0, 1, 0)) },
       built: { wall: !!(p.built && p.built.wall), tower: !!(p.built && p.built.tower) },
       abils: (Array.isArray(p.abils) ? p.abils : []).filter(id => ids.has(id)),
       tree: (Array.isArray(p.tree) ? p.tree : []).filter(id => TREE_IDS.has(id)), pts: Math.floor(nm(p.pts, 0, 99, 0)) },
@@ -4297,7 +4312,7 @@ function startGame() {
   Object.assign(G, { on: true, paused: false, ended: false, tactical: false, photo: false, ts: 1, hitstop: 0, kills: 0, gold: 0, gil: 0, exp: 0, energy: 100, ult: 0, cd: { strike: 0, roll: 0 }, combo: 0, shake: 0,
     startTime: G.time, cycleT: 0, vign: 0, eclipseT: 0, surgeT: 0, bossDrops: 0, extracted: 0, graceT: 5, xp: 0, chests: 0, rw: { exp: 0, gil: 0, items: {} }, gorillaBoss: null,
     mission: 'explore', missionProgress: 0, totalDistance: 0, maxEnergy: 100, killKinds: {}, bounty: null, side: null, weather: 'clear', weatherT: rand(90, 200), wf: 0, boltT: 0, cutsceneT: 0, nightHuntCD: rand(60, 110), nightPack: null, merchant: null, merchantCD: rand(300, 420), rotate: true, sandbox: false, nextSave: G.time + 30 });
-  Object.assign(PL, { climb: null, mats: { hide: 0, fang: 0, meat: 0 }, craft: { vest: 0, charm: 0 }, built: { wall: false, tower: false }, critBonus: 0, tree: {}, pts: 0, mealT: 0, unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse']), guard: false, guardT: 0, hp: 150, maxHp: 150, level: 1, dmgMul: 1, regen: 3, enRegen: 11, vx: 0, vz: 0, facing: Math.PI, swing: 0, phase: 0, lastHit: -10, auraT: 0, dashT: 0, rollT: 0, pose: 0,
+  Object.assign(PL, { climb: null, mats: { hide: 0, fang: 0, meat: 0, moss: 0, crystal: 0 }, craft: { vest: 0, charm: 0, axeUp: 0, claymoreUp: 0 }, built: { wall: false, tower: false }, critBonus: 0, tree: {}, pts: 0, mealT: 0, unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse']), guard: false, guardT: 0, hp: 150, maxHp: 150, level: 1, dmgMul: 1, regen: 3, enRegen: 11, vx: 0, vz: 0, facing: Math.PI, swing: 0, phase: 0, lastHit: -10, auraT: 0, dashT: 0, rollT: 0, pose: 0,
     vy: 0, grounded: true, jumps: 0, coyote: 0, airT: 0, shootCd: 0,
     atb: 100, atbSegs: 2, owned: ['claws'], items: { potion: 3, ether: 2, elixir: 1 } });
   if (carry) Object.assign(PL, { owned: carry.owned, tree: carry.tree, pts: carry.pts, craft: carry.craft, unlockedAbils: new Set(['strike', 'summon', 'bh', 'eclipse', ...carry.abils]) });
