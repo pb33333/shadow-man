@@ -2955,6 +2955,8 @@ function updatePlayer(dt, rdt) {
   const sp = Math.hypot(vx, vz), k = PL.rollT > 0 ? 0 : Math.min(1, sp / 8.5);
   PL.phase += dt * (3 + Math.min(sp, 14) * .95);
   if (PL.swing > 0) PL.swing = Math.max(0, PL.swing - dt);
+  // Weapon attack trail: particle arc during swing
+  if (PL.swing > 0 && PL.swing > .08 && Math.random() < .6) { const t = 1 - PL.swing / .28, a = PL.strikeDir + Math.sin(t * Math.PI) * .8, r = 3 + Math.sin(t * Math.PI) * 1.5, x = hero.root.position.x + Math.cos(a) * r, z = hero.root.position.z + Math.sin(a) * r, col = WEAPONS[PL.weapon].col; emit(x, hero.root.position.y + .8, z, 0, 0, 0, col, .25, .35, 0, .7); }
   if (PL.pose > 0) PL.pose = Math.max(0, PL.pose - dt);
   animHero(hero, k, PL.phase, PL.swing); animCape(hero, k, G.time);
   // gait owns the stride bob; this adds the roll hop and breathing while standing still
