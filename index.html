@@ -225,8 +225,11 @@ body.lefty #shoot-btn { right: auto; left: max(10px, env(safe-area-inset-right, 
 body.lefty #crawl-btn { right: auto; left: calc(max(10px, env(safe-area-inset-right, 0px) + 6px) + 156px); }
 #joy-hint { position: absolute; left: 12%; bottom: 22%; color: rgba(255,255,255,.35); font-size: 12px; font-weight: 800; letter-spacing: .15em; display: none; }
 body.touch #joy-hint { display: block; }
-#tpad { --b: 54px; position: absolute; right: max(10px, env(safe-area-inset-right, 0px) + 6px); bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); display: none; grid-template-columns: repeat(5, var(--b)); grid-auto-rows: var(--b); gap: 8px; }
+#tpad { --b: 54px; position: absolute; right: max(10px, env(safe-area-inset-right, 0px) + 6px); bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); display: none; grid-template-columns: repeat(5, var(--b)); grid-auto-rows: var(--b); gap: 8px; max-width: 100vw; }
 body.touch #tpad { display: grid; }
+@media (max-width: 1024px) { #tpad { --b: 24px !important; gap: 2px !important; grid-template-columns: 1fr !important; max-width: 30px !important; } }
+@media (max-width: 768px) { #tpad { --b: 18px !important; gap: 1px !important; grid-template-columns: 1fr !important; max-width: 22px !important; } }
+@media (max-width: 480px) { #tpad { --b: 16px !important; gap: 0px !important; grid-template-columns: 1fr !important; max-width: 20px !important; } }
 #dodge-btn { --b: 62px; position: absolute; left: max(10px, env(safe-area-inset-left, 0px) + 6px); bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) + 6px) + 140px); width: var(--b); height: var(--b); display: none; pointer-events: auto; touch-action: none; border-radius: 50%; border: 2px solid rgba(120,200,255,.7); background: rgba(12,7,26,.65); color: #fff; font-size: 26px; place-items: center; }
 body.touch #dodge-btn { display: grid; }
 #ctx { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column; gap: 2px; pointer-events: auto; z-index: 100; background: rgba(12,7,26,.95); border: 2px solid rgba(100,200,255,.6); border-radius: 8px; padding: 8px 0; max-height: 70vh; overflow-y: auto; min-width: 160px; }
@@ -3035,9 +3038,9 @@ function updatePlayer(dt, rdt) {
     emit(x + rand(-.45, .45), root.position.y + rand(.2, 2.3), z + rand(-.45, .45), rand(-.3, .3) - PL.vx * .15, rand(.6, 1.6), rand(-.3, .3) - PL.vz * .15, Math.random() < .7 ? 0x7a3cff : 0xff3cc8, rand(.12, .24), rand(.5, 1), 0, 1);
     if (Math.random() < .35) smoke(x + rand(-.3, .3), root.position.y + rand(.05, .4), z + rand(-.3, .3), -PL.vx * .1, rand(.2, .6), -PL.vz * .1, rand(.35, .6), rand(.6, 1)); }
   else PL.auraT = 0;
-  playerLight.position.set(x, root.position.y + 2, z);
+  playerLight.position.set(x, hero.root.position.y + 2, z);
   if (!PL.guardMesh) { PL.guardMesh = new THREE.Mesh(new THREE.SphereGeometry(1.7, 18, 14), new THREE.MeshBasicMaterial({ color: 0x8ab4ff, transparent: true, opacity: .25, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); scene.add(PL.guardMesh); }
-  PL.guardMesh.visible = !!PL.guard && !fp; PL.guardMesh.position.set(x, root.position.y + 1.2, z);
+  PL.guardMesh.visible = !!PL.guard && !fp; PL.guardMesh.position.set(x, hero.root.position.y + 1.2, z);
   if (PL.guard) { const pw = PL.guardT < .22; PL.guardMesh.material.color.setHex(pw ? 0xdff6ff : 0x8a6cff); PL.guardMesh.material.opacity = pw ? .5 : .22 + Math.sin(G.time * 14) * .04; }
   if (fp && viewModel.userData.w) { const w = viewModel.userData.w, t = PL.swing > 0 ? 1 - PL.swing / .28 : 0; w.rotation.x = -1.25 + Math.sin(t * Math.PI) * -.9; w.rotation.z = -.2 + Math.sin(t * Math.PI) * 1.2; w.position.y = (PL.weapon === 'claws' ? -.34 : -.5) + Math.sin(PL.phase * 2) * .02 * k; if (w.userData.ring) w.userData.ring.rotation.y += dt * 3; }
   if (act.strike) { act.strike = false; doStrike(); }
