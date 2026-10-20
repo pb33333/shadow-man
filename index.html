@@ -3770,7 +3770,7 @@ function updateCamera(dt) {
     camera.position.set(hx + rand(-sh, sh) * .3, hy + rand(-sh, sh) * .3, hz);
     camera.lookAt(hx - Math.sin(camYaw) * cp, hy - Math.sin(camPitch), hz - Math.cos(camYaw) * cp);
   } else {
-    camTarget.x = damp(camTarget.x, p.x, 14, dt); camTarget.z = damp(camTarget.z, p.z, 14, dt); camTarget.y = damp(camTarget.y, p.y + 1.8, 8, dt);
+    camTarget.x = damp(camTarget.x, p.x, 22, dt); camTarget.z = damp(camTarget.z, p.z, 22, dt); camTarget.y = damp(camTarget.y, p.y + 1.8, 14, dt);
     const cp = Math.cos(camPitch), spn = Math.sin(camPitch), ux = Math.sin(camYaw), uz = Math.cos(camYaw);
     let L = cp * S.camDist;
     for (const c of colliders) { const ox = c.x - camTarget.x, oz = c.z - camTarget.z, tt = ox * ux + oz * uz; if (tt < .6 || tt > L + c.r + .5) continue; const rr = c.r + .45; if (Math.abs(ox * uz - oz * ux) < rr) L = Math.min(L, tt - rr); }
