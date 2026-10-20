@@ -2848,6 +2848,12 @@ function update(dt) {
   let gdt = dt * G.ts; if (G.hitstop > 0) { G.hitstop -= dt; gdt *= .1; } else if (G.slowT > 0) { G.slowT -= dt; gdt *= .45; } // slowT: perfect-dodge bullet time
   if (G.on && !G.paused && !G.photo) {
     updatePlayer(gdt, dt);
+    // Height-based discovery: reward for reaching high vantage points
+    const ph = hero.root.position.y; if (ph > 8 && (!G.heightBonus || G.heightBonus < G.time)) { G.heightBonus = G.time + 20; G.gil += 50; popText(hero.root.position.x, ph + 2, hero.root.position.z, '+ 50 Gil · High Ground', '#ffd36a', 'big'); sfx('pickup'); }
+    // Location-based discoveries: hidden reward zones at interesting spots
+    const pp = hero.root.position; const discoveries = [[35, 35, 'Forest Crown'], [-50, -50, 'Ancient Grove'], [60, 0, 'Waterfall Pool']];
+    (G.discoveredLocs = G.discoveredLocs || []).forEach((loc, i) => { const [x, z] = loc; if (Math.hypot(pp.x - x, pp.z - z) < 8) { G.discoveredLocs.splice(i, 1); G.gil += 75; popText(x, floorAt(x, z) + 3, z, '★ ' + loc[2], '#ffd36a', 'big'); notify('★ Discovered: ' + loc[2], '#ffb347'); sfx('pickup'); } });
+    if (!G.discoveredLocs || G.discoveredLocs.length === 0) G.discoveredLocs = discoveries.map(d => d);
     updateBlackHoles(gdt);
     updateEnemies(gdt);
     updateWild(gdt);
