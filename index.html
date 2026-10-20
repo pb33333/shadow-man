@@ -3737,8 +3737,12 @@ function updateHUD(dt) {
   if (t && !t.dying) {
     targetEl.hidden = false; setT(tName, t.name); setT(tLv, 'Lv ' + t.lv); setW(tHp, t.hp / t.maxHp * 100); setW(tStg, t.stg);
     setT(tStat, t.stgT > 0 ? 'STAGGERED · DAMAGE ×' + t.stgBonus.toFixed(2) : t.stg > 60 ? 'PRESSURED' : t.stun > 0 ? 'STUNNED' : '');
-    _v.set(t.root.position.x, t.root.position.y + t.flyH + t.T.h * t.scale * .55, t.root.position.z).project(camera);
-    if (_v.z < 1) { reticle.style.display = 'block'; reticle.style.transform = `translate(${(_v.x + 1) / 2 * innerWidth}px,${(1 - _v.y) / 2 * innerHeight}px)`; } else reticle.style.display = 'none';
+    const tgY = t.root.position.y + t.flyH + t.T.h * t.scale * .55;
+    _v.set(t.root.position.x, tgY, t.root.position.z).project(camera);
+    const camClose = camera.position.distanceTo(t.root.position) < 3; // very close targets sit right on the clip plane and the raw projection flickers/jumps
+    if (_v.z < 1) { reticle.style.display = 'block'; reticle.style.transform = `translate(${(_v.x + 1) / 2 * innerWidth}px,${(1 - _v.y) / 2 * innerHeight}px)`; }
+    else if (camClose) { reticle.style.display = 'block'; reticle.style.transform = `translate(${innerWidth / 2}px,${innerHeight / 2}px)`; } // too close to project reliably — just center it
+    else reticle.style.display = 'none';
   } else { targetEl.hidden = true; reticle.style.display = 'none'; }
   if (G.tactical) setT($('tac-atb'), 'ACTION ' + Math.floor(PL.atb / 100) + '/' + PL.atbSegs);
   G.vign = Math.max(0, G.vign - dt * 2.2);
