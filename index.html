@@ -225,13 +225,20 @@ body.lefty #shoot-btn { right: auto; left: max(10px, env(safe-area-inset-right, 
 body.lefty #crawl-btn { right: auto; left: calc(max(10px, env(safe-area-inset-right, 0px) + 6px) + 156px); }
 #joy-hint { position: absolute; left: 12%; bottom: 22%; color: rgba(255,255,255,.35); font-size: 12px; font-weight: 800; letter-spacing: .15em; display: none; }
 body.touch #joy-hint { display: block; }
-#tpad { --b: 54px; position: absolute; right: max(10px, env(safe-area-inset-right, 0px) + 6px); bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); display: none; grid-template-columns: repeat(5, var(--b)); grid-auto-rows: var(--b); gap: 8px; max-width: 100vw; }
-body.touch #tpad { display: grid; }
-@media (max-width: 1024px) { #tpad { --b: 24px !important; gap: 2px !important; grid-template-columns: 1fr !important; max-width: 30px !important; } }
-@media (max-width: 768px) { #tpad { --b: 18px !important; gap: 1px !important; grid-template-columns: 1fr !important; max-width: 22px !important; } }
-@media (max-width: 480px) { #tpad { --b: 16px !important; gap: 0px !important; grid-template-columns: 1fr !important; max-width: 20px !important; } }
-#dodge-btn { --b: 62px; position: absolute; left: max(10px, env(safe-area-inset-left, 0px) + 6px); bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) + 6px) + 140px); width: var(--b); height: var(--b); display: none; pointer-events: auto; touch-action: none; border-radius: 50%; border: 2px solid rgba(120,200,255,.7); background: rgba(12,7,26,.65); color: #fff; font-size: 26px; place-items: center; }
-body.touch #dodge-btn { display: grid; }
+/* Old tactical grid hidden completely */
+#tpad { display: none !important; }
+#dodge-btn { display: none !important; }
+#jump-btn { display: none !important; }
+#shoot-btn { display: none !important; }
+#crawl-btn { display: none !important; }
+
+/* New mobile-only touch controls */
+#mobile-controls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); left: max(10px, env(safe-area-inset-left, 0px) + 6px); right: max(10px, env(safe-area-inset-right, 0px) + 6px); height: 80px; display: none; gap: 12px; z-index: 50; pointer-events: none; }
+body.touch #mobile-controls { display: flex; }
+.mobile-btn { position: absolute; width: 72px; height: 72px; border-radius: 50%; border: 2px solid rgba(100,200,255,.6); background: rgba(12,7,26,.8); color: #fff; font-size: 28px; display: grid; place-items: center; pointer-events: auto; touch-action: none; font-weight: bold; transition: background .1s, transform .1s; }
+.mobile-btn:active { background: rgba(100,200,255,.4); transform: scale(.95); }
+#jump-control { left: 0; bottom: 0; border-color: rgba(106,255,154,.6); }
+#attack-control { right: 0; bottom: 0; border-color: rgba(255,179,71,.6); }
 #ctx { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column; gap: 2px; pointer-events: auto; z-index: 100; background: rgba(12,7,26,.95); border: 2px solid rgba(100,200,255,.6); border-radius: 8px; padding: 8px 0; max-height: 70vh; overflow-y: auto; min-width: 160px; }
 body.touch #ctx.on { display: flex; }
 #ctx button { pointer-events: auto; touch-action: none; padding: 8px 16px; border: none; background: transparent; color: #fff; font: 700 13px system-ui, sans-serif; text-align: left; white-space: nowrap; transition: background .1s; } #ctx button:hover { background: rgba(100,200,255,.2); }
@@ -358,6 +365,10 @@ body.touch .keys.mob { display: flex; }
   <div id="banner"><div class="b1"></div><div class="b2"></div></div>
   <div id="letterbox"><div class="bar top"></div><div class="bar bot"></div><div id="cs-card"><div class="ct"></div><div class="cs"></div></div><div id="cs-skip">tap or press any key to skip</div></div>
   <div id="minimap-container"><canvas id="minimap" width="160" height="160"></canvas></div>
+  <div id="mobile-controls">
+    <button id="jump-control" class="mobile-btn">↑</button>
+    <button id="attack-control" class="mobile-btn">⚔️</button>
+  </div>
   <div id="victory" class="ffwin" hidden><h2>VICTORY</h2><div id="v-rows"></div></div>
   <div id="skill-tree" class="ffwin" hidden>
     <div id="st-title">LEVEL UP · CHOOSE A SKILL</div>
@@ -1027,6 +1038,13 @@ TBTN.forEach(([id, icon, label, col, row]) => {
   b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) act[a] = true; });
   ['pointerup','pointercancel','pointerleave'].forEach(t => b.addEventListener(t, e => e.stopPropagation())); });
 { const cb = $('crawl-btn'); cb.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (G.on && !G.paused) { PL.crawl = !PL.crawl; cb.classList.toggle('on', PL.crawl); } }); }
+
+// New mobile-only simple controls
+const jc = $('jump-control'), ac = $('attack-control');
+jc.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) act.jump = true; });
+jc.addEventListener('pointerup', e => e.stopPropagation()); jc.addEventListener('pointercancel', e => e.stopPropagation()); jc.addEventListener('pointerleave', e => e.stopPropagation());
+ac.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) lmb = true; });
+ac.addEventListener('pointerup', e => { e.stopPropagation(); lmb = false; }); ac.addEventListener('pointercancel', e => { e.stopPropagation(); lmb = false; }); ac.addEventListener('pointerleave', e => { e.stopPropagation(); lmb = false; });
 function touchBtn(id, down) {
   if (!G.on || G.paused) return;
   if (id === 'attack') { lmb = down; if (down) act.strike = true; return; }
