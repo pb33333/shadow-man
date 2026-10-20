@@ -31,6 +31,7 @@ body { font-family: 'Exo 2', system-ui, sans-serif; color: var(--fg); user-selec
 button { font-family: inherit; }
 
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #hud:has(#skill-tree:not([hidden])), #hud:has(#tree:not([hidden])) { z-index: 150; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(6px); }
 .ffwin { background: linear-gradient(180deg, rgba(40,60,150,.94), rgba(10,18,66,.95)); border: 2px solid rgba(232,238,255,.85); border-radius: 10px; box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 12px 40px rgba(0,0,0,.5); color: #fff; }
 .lbl { font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
