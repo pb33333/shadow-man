@@ -205,6 +205,8 @@ table.lb-table td.lb-score { font-weight: 800; font-variant-numeric: tabular-num
 #eclipse-tint { position: fixed; inset: 0; pointer-events: none; z-index: 8; opacity: 0; background: radial-gradient(ellipse at center, rgba(60,0,90,.05) 30%, rgba(40,0,70,.65) 100%); }
 #crit-flash { position: fixed; inset: 0; pointer-events: none; z-index: 7; opacity: 0; background: white; transition: opacity .05s; }
 #boss-bar { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10; opacity: 0; transition: opacity .3s; font-family: Arial, sans-serif; }
+#minimap-container { position: fixed; top: max(20px, env(safe-area-inset-top, 0px) + 14px); right: max(12px, env(safe-area-inset-right, 0px) + 8px); z-index: 40; pointer-events: auto; cursor: pointer; }
+#minimap { width: 160px; height: 160px; background: rgba(20,10,40,.8); border: 2px solid rgba(100,200,255,.6); border-radius: 8px; display: block; image-rendering: pixelated; }
 #boss-bar-name { color: #a66bff; font-size: 16px; font-weight: bold; text-align: center; text-shadow: 0 0 8px rgba(166,107,255,.5); margin-bottom: 4px; }
 #boss-bar-fill { width: 200px; height: 12px; background: #1a1a2e; border: 2px solid #a66bff; border-radius: 4px; overflow: hidden; box-shadow: 0 0 12px rgba(166,107,255,.3); }
 #boss-bar-hp { height: 100%; background: linear-gradient(90deg, #ff4444 0%, #ffaa44 50%, #44ff44 100%); width: 100%; transition: width .15s; }
@@ -352,6 +354,7 @@ body.touch .keys.mob { display: flex; }
   <div id="notifs"></div>
   <div id="banner"><div class="b1"></div><div class="b2"></div></div>
   <div id="letterbox"><div class="bar top"></div><div class="bar bot"></div><div id="cs-card"><div class="ct"></div><div class="cs"></div></div><div id="cs-skip">tap or press any key to skip</div></div>
+  <div id="minimap-container"><canvas id="minimap" width="160" height="160"></canvas></div>
   <div id="victory" class="ffwin" hidden><h2>VICTORY</h2><div id="v-rows"></div></div>
   <div id="skill-tree" class="ffwin" hidden>
     <div id="st-title">LEVEL UP · CHOOSE A SKILL</div>
@@ -1142,6 +1145,48 @@ function init() {
   bindInput();
   precompile();
 
+  // Minimap initialization
+  const minimapCanvas = $('minimap'), minimapCtx = minimapCanvas.getContext('2d');
+  let minimapExpanded = false;
+  const MINIMAP_SCALE = .08; // world units to canvas pixels
+  minimapCanvas.addEventListener('click', () => {
+    minimapExpanded = !minimapExpanded;
+    minimapCanvas.width = minimapExpanded ? 320 : 160;
+    minimapCanvas.height = minimapExpanded ? 320 : 160;
+    minimapCanvas.style.width = (minimapExpanded ? 320 : 160) + 'px';
+    minimapCanvas.style.height = (minimapExpanded ? 320 : 160) + 'px';
+  });
+  function renderMinimap() {
+    if (!G.on) return;
+    const w = minimapCanvas.width, h = minimapCanvas.height, cx = w / 2, cy = h / 2;
+    minimapCtx.fillStyle = 'rgba(20,10,40,.9)'; minimapCtx.fillRect(0, 0, w, h);
+
+    // Draw compass rose (cardinal directions)
+    minimapCtx.fillStyle = 'rgba(100,200,255,.3)'; minimapCtx.font = (minimapExpanded ? '12px' : '10px') + ' Arial'; minimapCtx.textAlign = 'center'; minimapCtx.textBaseline = 'middle';
+    const pad = minimapExpanded ? 12 : 8;
+    minimapCtx.fillText('N', cx, pad); minimapCtx.fillText('E', w-pad, cy); minimapCtx.fillText('S', cx, h-pad); minimapCtx.fillText('W', pad, cy);
+
+    // Draw known locations
+    const locColor = { relic: '#ffd36a', camp: '#ffb347', gate: '#a66bff' };
+    const dotSize = minimapExpanded ? 3 : 2;
+    G.sites?.forEach(site => {
+      const sx = cx + site.x * MINIMAP_SCALE, sy = cy + site.z * MINIMAP_SCALE;
+      if (sx > 0 && sx < w && sy > 0 && sy < h) {
+        minimapCtx.fillStyle = locColor[site.kind] || '#888';
+        minimapCtx.fillRect(sx - dotSize, sy - dotSize, dotSize*2, dotSize*2);
+      }
+    });
+
+    // Draw player as small dot
+    if (hero) {
+      const px = cx + hero.root.position.x * MINIMAP_SCALE, py = cy + hero.root.position.z * MINIMAP_SCALE;
+      minimapCtx.fillStyle = '#00ff88'; minimapCtx.beginPath(); minimapCtx.arc(px, py, minimapExpanded ? 4 : 3, 0, 6.28); minimapCtx.fill();
+    }
+
+    // Border
+    minimapCtx.strokeStyle = 'rgba(100,200,255,.6)'; minimapCtx.lineWidth = 2; minimapCtx.strokeRect(0, 0, w, h);
+  }
+
   clock = new THREE.Clock();
   (function frame() {
     requestAnimationFrame(frame);
@@ -1151,6 +1196,7 @@ function init() {
     try { update(dt); } catch (e) { console.error('Game update error:', e); }
     try {
       if (effBloom()) composer.render(dt); else renderer.render(scene, camera);
+      renderMinimap();
     } catch (e) {
       console.error('Game render error:', e);
     }
