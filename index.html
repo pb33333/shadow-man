@@ -1921,10 +1921,10 @@ function buildHero() {
     for (let k = -1; k <= 1; k++) part(GEO.cone, glow, el, [k * .05, -.6, .04], [.025, .16, .025]).rotation.x = Math.PI;
     p.rotation.z = i ? -.1 : .1;
   });
-  const hand = pivot(EL[1], 0, -.48, .02);
+  const hand = pivot(EL[1], 0, -.48, .02), handL = pivot(EL[0], 0, -.48, .02);
   root.traverse(o => { if (o.isMesh) o.castShadow = true; });
   const blob = new THREE.Mesh(GEO.disc, MAT.blob); blob.rotation.x = -Math.PI / 2; blob.position.y = .06; blob.scale.setScalar(.7); root.add(blob);
-  return { root, body, legL, legR, armL, armR, head, hand, cape, capeBase: Float32Array.from(capeGeo.attributes.position.array), blob,
+  return { root, body, legL, legR, armL, armR, head, hand, handL, cape, capeBase: Float32Array.from(capeGeo.attributes.position.array), blob,
     kneeL: KN[0], kneeR: KN[1], ankleL: AN[0], ankleR: AN[1], elbowL: EL[0], elbowR: EL[1], headY: 2.32 };
 }
 function animCape(h, k, t) {
@@ -2066,11 +2066,22 @@ function buildWeaponMesh(id) {
   if (id === 'staff') { part(GEO.cyl, dark, g, [0, .5, 0], [.04, 2.0, .04]); part(GEO.sphere, gl, g, [0, 1.62, 0], [.16, .16, .16]); const r = new THREE.Mesh(new THREE.TorusGeometry(.24, .02, 4, 24), gl); r.position.y = 1.62; g.add(r); g.userData.ring = r; }
   return g;
 }
-function equipWeapon(id, silent) {
+const SHIELD_WPNS = ['axe', 'claymore']; // one-handed-enough heavy weapons that pair with an off-hand shield
+  function buildShieldMesh(weaponId) {
+      const w = WEAPONS[weaponId], gl = basic(w.col), dark = std(0x120c1c, { roughness: .35, metalness: .8 });
+      const g = new THREE.Group();
+      part(GEO.disc, dark, g, [0, 0, 0], [.3, .3, .3]);
+      const rim = part(GEO.cyl, gl, g, [0, 0, -.015], [.31, .035, .31]); rim.rotation.x = Math.PI / 2;
+      part(GEO.sphere, gl, g, [0, 0, .04], [.09, .09, .09]);
+      return g;
+  }
+  function equipWeapon(id, silent) {
   if (!PL.owned.includes(id)) return;
   PL.weapon = id;
   if (hero.weapon) hero.hand.remove(hero.weapon);
   hero.weapon = buildWeaponMesh(id); hero.weapon.rotation.x = Math.PI / 2; hero.weapon.traverse(o => { if (o.isMesh) o.castShadow = true; }); hero.hand.add(hero.weapon);
+    if (hero.shield) { hero.handL.remove(hero.shield); hero.shield = null; }
+    if (SHIELD_WPNS.includes(id)) { hero.shield = buildShieldMesh(id); hero.shield.rotation.y = Math.PI / 2; hero.shield.position.set(0, -.04, .08); hero.shield.traverse(o => { if (o.isMesh) o.castShadow = true; }); hero.handL.add(hero.shield); }
   viewModel.clear(); const vm = buildWeaponMesh(id); vm.position.set(.42, -.5, -.85); vm.rotation.set(-1.25, .25, -.2); if (id === 'claws') { vm.position.set(.36, -.34, -.7); vm.scale.setScalar(.6); } viewModel.add(vm); viewModel.userData.w = vm;
   renderWeaponSlots();
   if (!silent) { notify(WEAPONS[id].icon + ' ' + WEAPONS[id].name, '#ffd36a'); sfx('swing'); }
