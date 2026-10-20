@@ -2854,6 +2854,8 @@ function update(dt) {
     const pp = hero.root.position; const discoveries = [[35, 35, 'Forest Crown'], [-50, -50, 'Ancient Grove'], [60, 0, 'Waterfall Pool']];
     (G.discoveredLocs = G.discoveredLocs || []).forEach((loc, i) => { const [x, z] = loc; if (Math.hypot(pp.x - x, pp.z - z) < 8) { G.discoveredLocs.splice(i, 1); G.gil += 75; popText(x, floorAt(x, z) + 3, z, '★ ' + loc[2], '#ffd36a', 'big'); notify('★ Discovered: ' + loc[2], '#ffb347'); sfx('pickup'); } });
     if (!G.discoveredLocs || G.discoveredLocs.length === 0) G.discoveredLocs = discoveries.map(d => d);
+    // Ambient jungle glow: fireflies/bioluminescence intensity varies by time of day (more at dusk/night)
+    if (Math.random() < .05) { const a = rand(0, 6.283), r = rand(8, 24), gx = pp.x + Math.cos(a) * r, gz = pp.z + Math.sin(a) * r, tod = curTOD === TOD.dusk || curTOD === TOD.night ? 1 : curTOD === TOD.dawn ? .3 : .1; if (Math.random() < tod) emit(gx, floorAt(gx, gz) + rand(1, 4), gz, 0, rand(-.2, .1), 0, pick([0x7ae87a, 0x6fd8ff, 0xffd36a]), rand(.15, .3), rand(.8, 2), 0, .8); }
     updateBlackHoles(gdt);
     updateEnemies(gdt);
     updateWild(gdt);
