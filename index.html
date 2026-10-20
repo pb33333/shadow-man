@@ -783,24 +783,15 @@ function closeTree() { $('tree').hidden = true; G.noPause = false; if (treeFrom 
 function showShop() { // camp shop: unowned weapons 250g+, locked skills 300g
   if (!CAMP.near || skillTreeOpen || !G.on) return;
   skillTreeOpen = true; G.noPause = true;
-  $('st-title').textContent = 'CAMP SHOP'; $('st-level').textContent = '💰 ' + G.gil.toLocaleString() + ' gil';
-  const cards = $('st-cards'); cards.innerHTML = '';
-  const items = [...WEAPON_ORDER.filter(id => !PL.owned.includes(id)).map(id => ({ icon: WEAPONS[id].icon, name: WEAPONS[id].name, desc: WEAPONS[id].desc || 'Weapon', cost: WEAPONS[id].price || 250, buy() { PL.owned.push(id); equipWeapon(id, true); } })),
-    ...SKILL_ABILS.filter(p => !PL.unlockedAbils.has(p.id)).map(p => ({ icon: p.icon, name: p.name, desc: 'Skill [' + p.key + ']', cost: 300, buy() { PL.unlockedAbils.add(p.id); } }))];
-  if (!items.length) items.push({ icon: '✅', name: 'Sold out', desc: 'You own everything', cost: 0, buy() {} });
-  items.push({ icon: '✖', name: 'Close', desc: '', cost: 0, buy() {} });
-  items.forEach(it => {
-    const c = document.createElement('div'); c.className = 'stcard';
-    c.innerHTML = `<div class="st-icon">${it.icon}</div><div class="st-name">${it.name}</div><div class="st-desc">${it.desc}${it.cost ? '<br>💰 ' + it.cost : ''}</div>`;
-    c.addEventListener('click', () => {
-      if (it.cost && G.gil < it.cost) { notify('Not enough gil (' + it.cost + ' needed)', '#ff8a80'); return; }
-      if (it.cost) { G.gil -= it.cost; G.gold = Math.max(0, G.gold - it.cost); it.buy(); sfx('pickup'); notify('Bought ' + it.name, '#ffd36a'); writeSave(); }
-      closeSkillTree();
-    });
-    cards.appendChild(c);
-  });
-  $('skill-tree').hidden = false;
+  ctxEl.innerHTML = `<div style="padding-top: 8px; font-size: 12px; color: #aaa; padding-left: 16px; padding-right: 16px;">💰 ${G.gil.toLocaleString()} gil available</div>`;
+  const items = [...WEAPON_ORDER.filter(id => !PL.owned.includes(id)).map(id => ({ icon: WEAPONS[id].icon, name: WEAPONS[id].name, cost: WEAPONS[id].price || 250, buy() { PL.owned.push(id); equipWeapon(id, true); } })),
+    ...SKILL_ABILS.filter(p => !PL.unlockedAbils.has(p.id)).map(p => ({ icon: p.icon, name: p.name, cost: 300, buy() { PL.unlockedAbils.add(p.id); } }))];
+  if (!items.length) { const b = document.createElement('button'); b.textContent = '✅ Sold out'; b.addEventListener('click', closeShop); ctxEl.appendChild(b); }
+  else { items.forEach(it => { const b = document.createElement('button'); b.innerHTML = `${it.icon} ${it.name} · <em>💰${it.cost}</em>`; b.addEventListener('click', () => { if (G.gil < it.cost) { notify('Not enough gil', '#ff8a80'); return; } G.gil -= it.cost; G.gold = Math.max(0, G.gold - it.cost); it.buy(); sfx('pickup'); notify('Bought ' + it.name, '#ffd36a'); writeSave(); ctxEl.classList.remove('on'); skillTreeOpen = false; G.noPause = false; }); ctxEl.appendChild(b); }); }
+  const b = document.createElement('button'); b.innerHTML = '✖ Close'; b.addEventListener('click', closeShop); ctxEl.appendChild(b);
+  ctxEl.classList.add('on');
 }
+function closeShop() { ctxEl.classList.remove('on'); skillTreeOpen = false; G.noPause = false; }
 function closeSkillTree() {
   $('st-title').textContent = 'LEVEL UP · CHOOSE A SKILL';
   $('skill-tree').hidden = true;
