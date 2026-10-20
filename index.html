@@ -3062,13 +3062,18 @@ function updateEnemies(dt) {
         const px = e.patrolX - r.position.x, pz = e.patrolZ - r.position.z, pd = Math.hypot(px, pz) || .01; if (pd > 1.2) { mvx = px / pd * s; mvz = pz / pd * s; }
       }
       if (d < 8 * ag * cf && e.atk <= 0 && !(e.dive > 0) && G.graceT <= 0) { e.atkCd -= dt * slow; if (e.atkCd <= 0) { e.atkCd = e.cd * rand(.85, 1.15); e.atk = .5; e.atkHit = false; sfx('warn'); e.atkTarget = tm; telegraph(r.position.x, r.position.z, e.reach + (e.boss ? 1.5 : 1)); popText(r.position.x, r.position.y + e.T.h * e.scale + e.flyH + 1, r.position.z, '!', '#ff4a6e', e.boss ? 'big' : undefined); } }
+      if (e.T.ranged && d < 16 && d > 6 && e.atk <= 0 && !(e.dive > 0) && G.graceT <= 0) { e.atkCd -= dt * slow; if (e.atkCd <= 0) { e.atkCd = e.cd * rand(.85, 1.15); e.atk = .5; e.atkHit = false; sfx('warn'); e.atkTarget = tm; telegraph(r.position.x + dx/d * 6, r.position.z + dz/d * 6, 2.5, .35); } }
       e.face = angDamp(e.face, Math.atan2(dx, dz), 7, dt); if (e.body) e.body.rotation.y = e.face;
     }
     if (e.atk > 0 && e.stun <= 0) {
       e.atk = Math.max(0, e.atk - dt * (e.boss ? .5 : .6)); // slower wind-up so attacks can be read, dodged or parried
       if (!e.atkHit && e.atk < .25) {
         e.atkHit = true;
-        if (e.boss) {
+        if (e.T.ranged) {
+          const dx = tx - r.position.x, dz = tz - r.position.z, d = Math.hypot(dx, dz) || .01;
+          fireBolt(r.position.x, r.position.y + 1.5, r.position.z, dx / d, dz / d, e.atkTarget, e.dmg, 0, 1, e.T.bolt || 0xffee00);
+          ring(r.position.x, r.position.y + .2, r.position.z, 3, e.T.bolt || 0xffee00, .3); shake(.2);
+        } else if (e.boss) {
           ring(r.position.x, r.position.y + .2, r.position.z, e.reach + 2, 0xff2a50, .5); puff(r.position.x, r.position.y + .3, r.position.z, 16, 6, 1.2); shake(.5);
           if (Math.hypot(pp.x - r.position.x, pp.z - r.position.z) < e.reach + 1.5) damagePlayer(e.dmg, e);
           G.minions.forEach(m => { if (!m.dead && Math.hypot(m.root.position.x - r.position.x, m.root.position.z - r.position.z) < e.reach + 1.5) damageMinion(m, e.dmg); });
