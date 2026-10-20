@@ -232,13 +232,16 @@ body.touch #joy-hint { display: block; }
 #shoot-btn { display: none !important; }
 #crawl-btn { display: none !important; }
 
-/* New mobile-only touch controls */
-#mobile-controls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); left: max(10px, env(safe-area-inset-left, 0px) + 6px); right: max(10px, env(safe-area-inset-right, 0px) + 6px); height: 80px; display: none; gap: 12px; z-index: 50; pointer-events: none; }
+/* New mobile-only touch controls — vertical stack on right */
+#mobile-controls { position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 0px) + 6px); right: max(10px, env(safe-area-inset-right, 0px) + 6px); display: none; flex-direction: column; gap: 8px; z-index: 50; pointer-events: none; align-items: flex-end; }
 body.touch #mobile-controls { display: flex; }
-.mobile-btn { position: absolute; width: 72px; height: 72px; border-radius: 50%; border: 2px solid rgba(100,200,255,.6); background: rgba(12,7,26,.8); color: #fff; font-size: 28px; display: grid; place-items: center; pointer-events: auto; touch-action: none; font-weight: bold; transition: background .1s, transform .1s; }
+.mobile-btn { width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(100,200,255,.6); background: rgba(12,7,26,.8); color: #fff; font-size: 24px; display: grid; place-items: center; pointer-events: auto; touch-action: none; font-weight: bold; transition: background .1s, transform .1s; flex-shrink: 0; }
 .mobile-btn:active { background: rgba(100,200,255,.4); transform: scale(.95); }
-#jump-control { left: 0; bottom: 0; border-color: rgba(106,255,154,.6); }
-#attack-control { right: 0; bottom: 0; border-color: rgba(255,179,71,.6); }
+#crawl-control { border-color: rgba(154,221,255,.5); }
+#skills-control { border-color: rgba(166,107,255,.6); }
+#ranged-control { border-color: rgba(255,200,87,.6); }
+#jump-control { border-color: rgba(106,255,154,.6); }
+#attack-control { border-color: rgba(255,179,71,.6); }
 #ctx { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column; gap: 2px; pointer-events: auto; z-index: 100; background: rgba(12,7,26,.95); border: 2px solid rgba(100,200,255,.6); border-radius: 8px; padding: 8px 0; max-height: 70vh; overflow-y: auto; min-width: 160px; }
 body.touch #ctx.on { display: flex; }
 #ctx button { pointer-events: auto; touch-action: none; padding: 8px 16px; border: none; background: transparent; color: #fff; font: 700 13px system-ui, sans-serif; text-align: left; white-space: nowrap; transition: background .1s; } #ctx button:hover { background: rgba(100,200,255,.2); }
@@ -366,8 +369,11 @@ body.touch .keys.mob { display: flex; }
   <div id="letterbox"><div class="bar top"></div><div class="bar bot"></div><div id="cs-card"><div class="ct"></div><div class="cs"></div></div><div id="cs-skip">tap or press any key to skip</div></div>
   <div id="minimap-container"><canvas id="minimap" width="160" height="160"></canvas></div>
   <div id="mobile-controls">
-    <button id="jump-control" class="mobile-btn">↑</button>
-    <button id="attack-control" class="mobile-btn">⚔️</button>
+    <button id="crawl-control" class="mobile-btn" title="Crawl">🐾</button>
+    <button id="skills-control" class="mobile-btn" title="Skills">✨</button>
+    <button id="ranged-control" class="mobile-btn" title="Ranged">🏹</button>
+    <button id="jump-control" class="mobile-btn" title="Jump">↑</button>
+    <button id="attack-control" class="mobile-btn" title="Attack">⚔️</button>
   </div>
   <div id="victory" class="ffwin" hidden><h2>VICTORY</h2><div id="v-rows"></div></div>
   <div id="skill-tree" class="ffwin" hidden>
@@ -1039,12 +1045,20 @@ TBTN.forEach(([id, icon, label, col, row]) => {
   ['pointerup','pointercancel','pointerleave'].forEach(t => b.addEventListener(t, e => e.stopPropagation())); });
 { const cb = $('crawl-btn'); cb.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (G.on && !G.paused) { PL.crawl = !PL.crawl; cb.classList.toggle('on', PL.crawl); } }); }
 
-// New mobile-only simple controls
-const jc = $('jump-control'), ac = $('attack-control');
+// New mobile-only controls on right side
+const cc = $('crawl-control'), sc = $('skills-control'), rc = $('ranged-control'), jc = $('jump-control'), ac = $('attack-control');
+// Crawl toggle
+cc.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) { PL.crawl = !PL.crawl; cc.style.opacity = PL.crawl ? '.6' : '1'; } });
+// Skills menu
+sc.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) showTree('game'); });
+// Ranged attack
+rc.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) act.shoot = true; });
+// Jump
 jc.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) act.jump = true; });
-jc.addEventListener('pointerup', e => e.stopPropagation()); jc.addEventListener('pointercancel', e => e.stopPropagation()); jc.addEventListener('pointerleave', e => e.stopPropagation());
+['pointerup','pointercancel','pointerleave'].forEach(t => jc.addEventListener(t, e => e.stopPropagation()));
+// Attack (hold to combo)
 ac.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); initAudio(); if (G.on && !G.paused) lmb = true; });
-ac.addEventListener('pointerup', e => { e.stopPropagation(); lmb = false; }); ac.addEventListener('pointercancel', e => { e.stopPropagation(); lmb = false; }); ac.addEventListener('pointerleave', e => { e.stopPropagation(); lmb = false; });
+['pointerup','pointercancel','pointerleave'].forEach(t => ac.addEventListener(t, e => { e.stopPropagation(); lmb = false; }));
 function touchBtn(id, down) {
   if (!G.on || G.paused) return;
   if (id === 'attack') { lmb = down; if (down) act.strike = true; return; }
