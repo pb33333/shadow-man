@@ -3698,7 +3698,7 @@ function updateHUD(dt) {
   const lowHp = PL.hp / PL.maxHp < .3 ? .35 + .15 * Math.sin(G.time * 6) : 0;
   const vo = Math.round(Math.max(G.vign, lowHp) * 100) / 100; if (vignette._o !== vo) { vignette._o = vo; vignette.style.opacity = vo; }
   if (critFlash._o !== G.critFlash) { critFlash._o = G.critFlash; critFlash.style.opacity = G.critFlash; }
-  const boss = enemies.find(e => e.boss && !e.dead); if (boss) { const pct = Math.max(0, boss.hp / boss.maxHp); bossBarName.textContent = boss.T.name; bossBarHp.style.width = (pct * 100) + '%'; bossBarText.textContent = Math.ceil(boss.hp) + ' / ' + boss.maxHp; bossBar.style.opacity = 1; } else { bossBar.style.opacity = 0; }
+  const boss = G.enemies.find(e => e.boss && !e.dead); if (boss) { const pct = Math.max(0, boss.hp / boss.maxHp); bossBarName.textContent = boss.T.name; bossBarHp.style.width = (pct * 100) + '%'; bossBarText.textContent = Math.ceil(boss.hp) + ' / ' + boss.maxHp; bossBar.style.opacity = 1; } else { bossBar.style.opacity = 0; }
   if (G.time - G.startTime > 25 && !ctrlHint._faded) { ctrlHint._faded = true; ctrlHint.style.opacity = '.3'; }
   if (S.minimap && (miniTick = (miniTick + 1) % 3) === 0) drawMinimap();
 }
