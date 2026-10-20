@@ -425,7 +425,7 @@ const DENS = TOUCH ? .55 : 1;
 
 // ═════════════════════════════ SETTINGS ═════════════════════════════
 const DEFAULTS = { quality: 'auto', shadows: true, bloom: true, grass: TOUCH ? 60 : 75, tod: 'golden', bright: 100, view: 100, fov: TOUCH ? 72 : 68,
-  cam: 'third', camDist: 9, sens: 100, invertY: false, shake: true, aim: true, lockCam: true, touchUI: TOUCH, touchSize: 100, wildlife: false, wpn3d: false, lefty: false,
+  cam: 'third', camDist: 9, sens: 100, invertY: false, shake: true, aim: true, lockCam: true, touchUI: TOUCH, touchSize: 100, wildlife: false, wpn3d: false, natureProps: false, lefty: false,
   diff: 'normal', waves: '20', army: TOUCH ? 12 : 20, unlockAll: false, tacSlow: true, dmgNums: true, minimap: true, vol: 70, music: 35 };
 const S = Object.assign({}, DEFAULTS);
 try { const saved = JSON.parse(localStorage.getItem('shadowman-settings-v4') || '{}'); for (const k in saved) if (k in DEFAULTS && typeof saved[k] === typeof DEFAULTS[k]) S[k] = saved[k]; } catch (e) {}
@@ -437,6 +437,7 @@ const SCHEMA = [
   { k: 'shadows', label: 'Real-time shadows', type: 'tog' },
   { k: 'wpn3d', label: 'Realistic weapons (beta)', hint: 'Real 3D swords, spear, hammer, scythe and bow · downloads about 0.5 MB', type: 'tog' },
   { k: 'wildlife', label: 'Realistic wildlife (beta)', hint: 'Real 3D deer and foxes roam the jungle · downloads about 6 MB', type: 'tog' },
+  { k: 'natureProps', label: 'Realistic ground cover (beta)', hint: 'Real 3D rocks, ferns, grass and bushes scattered around · downloads about 12 MB', type: 'tog' },
   { k: 'bloom', label: 'Glow effects', type: 'tog' },
   { k: 'grass', label: 'Grass density', type: 'rng', min: 0, max: 100, step: 10, fmt: v => v + '%' },
   { k: 'tod', label: 'Time of day', type: 'seg', opts: [['dawn', 'Dawn'], ['golden', 'Golden hour'], ['dusk', 'Dusk'], ['night', 'Night'], ['cycle', 'Day/night cycle']] },
@@ -923,6 +924,7 @@ function onSetting(k) {
   if (k === 'touchUI' || k === 'touchSize' || k === 'lefty') applyTouchUI();
   if (k === 'wildlife') syncWild();
   if (k === 'wpn3d') loadWpn3D();
+  if (k === 'natureProps') syncNature();
   if (!initDone) return;
   if (['quality', 'shadows', 'bloom', 'grass', 'fov', 'bright', 'view'].includes(k)) applyGraphics();
   if (k === 'tod') applyTOD();
@@ -3899,6 +3901,8 @@ function wildPlay(A, n) { const a = A.acts[n] || A.acts.Idle; if (!a || A.cur ==
 function syncWild() { if (S.wildlife && !WILD.g) loadWild(); if (WILD.g) WILD.g.visible = !!S.wildlife && !REGION; }
 function updateWild(dt) {
   if (S.wpn3d && !WPN3D.tried) loadWpn3D();
+  if (S.natureProps && !NATURE.tried) loadNature();
+  if (NATURE.g) NATURE.g.visible = !!S.natureProps && !REGION;
   if (!WILD.g) { if (S.wildlife) loadWild(); return; } WILD.g.visible = !!S.wildlife && !REGION; if (!WILD.g.visible) return;
   const p = hero.root.position;
   for (const A of WILD.list) {
@@ -3915,6 +3919,32 @@ function updateWild(dt) {
     A.m.position.set(A.x, hAt(A.x, A.z), A.z); A.m.rotation.y = A.face; A.mixer.update(dt);
   }
 }
+
+// ═════════════════════════════ NATURE PROPS ═════════════════════════════
+// Opt-in ground cover: real CC0 glTF models (Quaternius "Stylized Nature MegaKit") loaded from files published beside the page.
+const NATURE = { g: null, busy: false, tried: false, proto: {}, kinds: ['Fern_1', 'Clover_1', 'Clover_2', 'Grass_Common_Short', 'Grass_Common_Tall', 'Bush_Common', 'Rock_Medium_1', 'Rock_Medium_2', 'Rock_Medium_3'] };
+async function loadNature() {
+  if (NATURE.g || NATURE.busy || !THREE.GLTFLoader) return; NATURE.busy = true; NATURE.tried = true;
+  try {
+    for (const name of NATURE.kinds) {
+      const txt = await (await fetch('nature/' + name + '.json')).text();
+      const gltf = await new Promise((ok, no) => new THREE.GLTFLoader().parse(txt, 'nature/', ok, no));
+      gltf.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; } });
+      NATURE.proto[name] = gltf.scene;
+    }
+    const g = new THREE.Group();
+    for (let i = 0; i < 260; i++) {
+      const a = rand(0, 6.283), r = rand(10, PLAY_R - 4), x = Math.cos(a) * r, z = Math.sin(a) * r;
+      if (!wildOk(x, z)) continue;
+      const proto = NATURE.proto[pick(NATURE.kinds)], m = proto.clone(true), s = rand(.7, 1.3);
+      m.position.set(x, hAt(x, z), z); m.rotation.y = rand(0, 6.283); m.scale.setScalar(s);
+      g.add(m);
+    }
+    scene.add(g); NATURE.g = g; NATURE.g.visible = !!S.natureProps && !REGION;
+  } catch (e) { console.warn('nature props failed', e); }
+  NATURE.busy = false;
+}
+function syncNature() { if (S.natureProps && !NATURE.g) loadNature(); if (NATURE.g) NATURE.g.visible = !!S.natureProps && !REGION; }
 
 // ═════════════════════════════ CANOE ═════════════════════════════
 // A dugout at the river's west bank: board it near the water (L / ⛵) to paddle fast; it grounds itself on the bank.
