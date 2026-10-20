@@ -2358,6 +2358,8 @@ function createEnemy(kind, boss, wave) {
   BUILD[kind](e);
   if (boss) { addCrown(e); e.mats.forEach(m => m.emissive.setHex(0x2a0006)); }
   e.mats.forEach(m => { m.userData.base = m.emissive.clone(); });
+  // Apply enemy type color tint to materials
+  if (!boss) e.mats.forEach(m => { if (m.emissive) m.emissive.lerp(_c.setHex(T.col), .35); });
   const cast = effShadows() && (effQ() === 'high' || effQ() === 'ultra' || boss);
   e.root.traverse(o => { if (o.isMesh) o.castShadow = cast; });
   const blob = new THREE.Mesh(GEO.disc, MAT.blob); blob.rotation.x = -Math.PI / 2; blob.position.y = .06; blob.scale.setScalar(T.r * 1.3); e.root.add(blob);
