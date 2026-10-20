@@ -3179,6 +3179,8 @@ function spawnEnemy(x, z, kind) {
 }
 // Place enemies naturally at game start in free-roam mode
 function placeEnemies() {
+  // Near spawn: two easy frogs just past the camp's safe radius, so a new player's first fight is seconds away, not an 18+ unit walk
+  [[12, 0, 'frog'], [-12, 0, 'frog']].forEach(([x, z, k]) => spawnEnemy(x, z, k));
   // North zone: shallow water + marshland (weak creatures)
   [[8, 18, 'frog'], [12, 22, 'caiman'], [-8, 20, 'frog'], [0, 25, 'caiman'], [15, 30, 'frog']].forEach(([x, z, k]) => spawnEnemy(x, z, k));
   // Northeast zone: jungle predators (medium)
@@ -3261,6 +3263,8 @@ function openCache(st) {
   popText(st.x, st.y + 2.2, st.z, '+' + gil + ' gil', '#ffd36a'); notify('💰 Supply cache · +' + gil + ' gil' + extra, '#ffd36a');
 }
 function scatterChests() {
+  // Two caches placed just past the camp's safe radius, so a new player finds loot and gil within their first minute instead of the nearest one being 28+ units out
+  [[0, 12], [0, -12]].forEach(([x, z]) => addSite('loot', x, z, 'Supply cache'));
   let n = 0, tries = 0; const pts = [];
   while (n < 18 && tries++ < 500) {
     const a = rand(0, 6.283), r = Math.sqrt(rand(28 * 28, 98 * 98)), x = Math.cos(a) * r, z = Math.sin(a) * r;
