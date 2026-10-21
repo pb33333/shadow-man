@@ -2950,6 +2950,7 @@ function peaceFrac() {
 
 function updatePlayer(dt, rdt) {
   const sens = (locked ? .0022 : .005) * S.sens / 100, fp = S.cam === 'first';
+  if (Math.abs(mDX) > .5 || Math.abs(mDY) > .5) G.lastLookInput = G.time; // manual look should always win over the lock-cam auto-nudge
   camYaw -= mDX * sens; camPitch = clamp(camPitch + mDY * sens * .8 * (S.invertY ? -1 : 1), fp ? -1.35 : -.15, fp ? 1.35 : 1.1); mDX = mDY = 0;
   if (keys.ArrowLeft) camYaw += 2.2 * rdt; if (keys.ArrowRight) camYaw -= 2.2 * rdt;
   if (keys.ArrowUp) camPitch = clamp(camPitch - 1.2 * rdt, -1.35, 1.35); if (keys.ArrowDown) camPitch = clamp(camPitch + 1.2 * rdt, -1.35, 1.35);
@@ -3154,8 +3155,11 @@ function updateEnemies(dt) {
           ring(r.position.x, r.position.y + .2, r.position.z, e.reach + 2, 0xff2a50, .5); puff(r.position.x, r.position.y + .3, r.position.z, 16, 6, 1.2); shake(.5);
           if (Math.hypot(pp.x - r.position.x, pp.z - r.position.z) < e.reach + 1.5) damagePlayer(e.dmg, e);
           G.minions.forEach(m => { if (!m.dead && Math.hypot(m.root.position.x - r.position.x, m.root.position.z - r.position.z) < e.reach + 1.5) damageMinion(m, e.dmg); });
-        } else if (e.atkTarget) { const m = e.atkTarget; if (!m.dead && Math.hypot(m.root.position.x - r.position.x, m.root.position.z - r.position.z) < e.reach + 1) damageMinion(m, e.dmg); }
-        else if (Math.hypot(pp.x - r.position.x, pp.z - r.position.z) < e.reach + 1) damagePlayer(e.dmg, e);
+        } else {
+          let landed = false;
+          if (e.atkTarget) { const m = e.atkTarget; if (!m.dead && Math.hypot(m.root.position.x - r.position.x, m.root.position.z - r.position.z) < e.reach + 1) { damageMinion(m, e.dmg); landed = true; } }
+          if (!landed && Math.hypot(pp.x - r.position.x, pp.z - r.position.z) < e.reach + 1) damagePlayer(e.dmg, e); // the minion target died/fled mid-swing — don't let the attack whiff on nothing
+        }
       }
     }
     for (let j = i + 1; j < list.length; j++) {
@@ -3817,8 +3821,8 @@ function updateCamera(dt) {
   // Debug
   // if (G.time % 1 < .016 && G.on) console.log('cam mode:', S.cam, 'target:', camTarget.x.toFixed(1), camTarget.z.toFixed(1), 'player:', p.x.toFixed(1), p.z.toFixed(1), 'cam pos:', camera.position.x.toFixed(1), camera.position.z.toFixed(1));
   const t = G.target && !G.target.dying ? G.target : null;
-  if (t && S.lockCam && G.on && !G.paused) { // keep the locked target in front of the camera
-    const want = Math.atan2(-(t.root.position.x - p.x), -(t.root.position.z - p.z)); camYaw = angDamp(camYaw, want, 4, dt);
+  if (t && S.lockCam && G.on && !G.paused && G.time - (G.lastLookInput || -99) > .5) { // keep the locked target in front of the camera, but never fight the player's own look input
+    const want = Math.atan2(-(t.root.position.x - p.x), -(t.root.position.z - p.z)); camYaw = angDamp(camYaw, want, 1.6, dt);
     if (S.cam === 'third') camPitch = damp(camPitch, .32, 2, dt);
   }
   G.shake = Math.max(0, G.shake - dt * 1.8); const sh = G.shake * G.shake * .5;
